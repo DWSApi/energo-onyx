@@ -192,10 +192,6 @@ function Account() {
         console.error("Ошибка при получении данных пользователя:", error);
         setError("Ошибка при загрузке данных.");
       }
-
-      if (account.isAdmin == 2) {
-        const roles = "Холодка";
-      }
     };
 
     fetchAccountData();  // Вызов функции для получения данных
@@ -207,6 +203,10 @@ function Account() {
     localStorage.removeItem("isAdmin");
     navigate("/login");  // Перенаправляем на страницу входа
   };
+
+  if (account.isAdmin == 2) {
+    const roles = "Холодка";
+  }
 
   // Если пользователь не аутентифицирован, показываем кнопки для входа/регистрации
   if (!isAuthenticated) {
