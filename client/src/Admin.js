@@ -64,10 +64,12 @@ const AdminPanel = () => {
     };
     
     const handleEditUser = (user) => {
-        console.log("Выбранный пользователь:", user);
-        setSelectedUser(user);
+        console.log("Выбранный пользователь перед установкой:", user);
+        // Добавляем защиту, если нет пароля
+        setSelectedUser({ ...user, password: user.password || "" }); 
         setIsModalOpen(true);
     };
+    
     
     console.log("isModalOpen:", isModalOpen);
     console.log("selectedUser:", selectedUser);
@@ -98,7 +100,10 @@ const AdminPanel = () => {
     };
 
     console.log("isModalOpen:", isModalOpen);
-
+    useEffect(() => {
+        console.log("Текущий выбранный пользователь:", selectedUser);
+    }, [selectedUser]);
+    
     return (
         <div className="admin-panel">
             <h2>Панель администратора</h2>
@@ -151,7 +156,7 @@ const AdminPanel = () => {
                                 <input 
                                     type={showPassword ? "text" : "password"} 
                                     name="password" 
-                                    value={selectedUser.password || ""} 
+                                    value={selectedUser?.password || ""} // Выводим значение пароля
                                     onChange={handleChange} 
                                 />
                                 <button type="button" onClick={togglePasswordVisibility}>

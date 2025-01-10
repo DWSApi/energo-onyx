@@ -334,12 +334,15 @@ button:hover {
 }
 
 .modal-content11 {
-  background: white;
-  padding: 20px;
+  background: #fff;
+  border: 2px solid red;
   border-radius: 5px;
   max-width: 500px;
+  padding: 20px;
   width: 100%;
-  border: 2px solid red; /* Временная проверка */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 
