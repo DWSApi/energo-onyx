@@ -93,8 +93,10 @@ const Header = () => {
   
   return (
     <header className="header">
-      <div className="logo">Энергосбыт</div>
-      <img src={myImage} style={{width: "60px"}} alt="Описание" />
+      <div>     
+        <div className="logo">Энергосбыт</div>
+        <img src={myImage} style={{width: "60px"}} alt="Описание" />
+      </div>
       <nav>
         <Link to="/">Home</Link>
         <Link to="/services">Services</Link>
@@ -731,6 +733,7 @@ function Apps() {
                     maxHeight: '400px',
                     overflowY: 'auto',
                     width: '100%', // Увеличена ширина
+                    marginLeft: "-20px",
                   }}
             >
               <h3 className="fw-bold mb-0" style={{ textAlign: 'center', fontSize: '24px', marginBottom: '20px' }}></h3>
