@@ -226,7 +226,7 @@ function Account() {
   }
 
   const hanleRole = () => {
-    if (isAdmin == 2) {
+    if (account.isAdmin == 2) {
       const roles = "Холодка";
     }
   };
