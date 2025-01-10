@@ -63,7 +63,9 @@ const AdminPanel = () => {
     };
 
     const handleEditUser = (user) => {
+        console.log("Выбранный пользователь:", user);
         setSelectedUser(user);
+        console.log("Открытие модального окна для пользователя:", user);
         setIsModalOpen(true); // Открываем модальное окно
     };
 
@@ -87,6 +89,7 @@ const AdminPanel = () => {
         const { name, value } = e.target;
         setSelectedUser(prev => ({ ...prev, [name]: value }));
     };
+    console.log("isModalOpen:", isModalOpen);
 
     return (
         <div className="admin-panel">
