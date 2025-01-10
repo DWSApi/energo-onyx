@@ -235,11 +235,9 @@ function Account() {
   return (
     <div className="account">
       <h2>Мой аккаунт</h2>
-      <p>Имя: {account.name}</p>
-      <p>Email: {account.email}</p>
-      <p>Роль: {roles}</p>
-      <p>Текущий баланс: {account.balance}</p>
-      <button className="btn">Заплатить сейчас</button>
+      <p>Имя:  {account.name}</p>
+      <p>Email:  {account.email}</p>
+      <p>Роль:  {roles}</p>
       <button className="btn logout" onClick={handleLogout}>Выйти</button>
     </div>
   );
