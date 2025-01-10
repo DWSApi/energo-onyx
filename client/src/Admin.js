@@ -9,6 +9,7 @@ const AdminPanel = () => {
     const [selectedUser, setSelectedUser] = useState(null); // Хранение данных выбранного пользователя
     const [error, setError] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false); // Управление модальным окном
+    const [showPassword, setShowPassword] = useState(false); // Управление видимостью пароля
     const navigate = useNavigate();
     const { role, isAuthenticated, name } = useAuth();  // Получаем роль и имя пользователя
 
@@ -61,6 +62,7 @@ const AdminPanel = () => {
             setError("Ошибка удаления пользователя.");
         }
     };
+    
     const handleEditUser = (user) => {
         console.log("Выбранный пользователь:", user);
         setSelectedUser(user);
@@ -90,6 +92,11 @@ const AdminPanel = () => {
         const { name, value } = e.target;
         setSelectedUser(prev => ({ ...prev, [name]: value }));
     };
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(prevState => !prevState);
+    };
+
     console.log("isModalOpen:", isModalOpen);
 
     return (
@@ -140,12 +147,17 @@ const AdminPanel = () => {
                         </label>
                         <label>
                             Пароль:
-                            <input 
-                                type="password" 
-                                name="password" 
-                                value={selectedUser.password || ""} 
-                                onChange={handleChange} 
-                            />
+                            <div className="password-container">
+                                <input 
+                                    type={showPassword ? "text" : "password"} 
+                                    name="password" 
+                                    value={selectedUser.password || ""} 
+                                    onChange={handleChange} 
+                                />
+                                <button type="button" onClick={togglePasswordVisibility}>
+                                    {showPassword ? "Скрыть" : "Показать"}
+                                </button>
+                            </div>
                         </label>
                         <label>
                             Роль:
