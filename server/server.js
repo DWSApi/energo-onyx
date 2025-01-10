@@ -149,6 +149,35 @@ app.get("*", (req, res) => {
     res.sendFile(path.join(clientPath, "index.html"));
 });
 
+// Обновление данных пользователя
+app.put("/users/:id", authenticateToken, async (req, res) => {
+    const { name, email } = req.body;
+    const userId = req.params.id;
+
+    // Проверка, что обновляются правильные данные
+    if (!name || !email) {
+        return res.status(400).json({ error: "Недостаточно данных для обновления" });
+    }
+
+    try {
+        // Обновляем пользователя в базе данных
+        const [result] = await db.query(
+            "UPDATE Holodka SET name = ?, email = ? WHERE id = ?",
+            [name, email, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Пользователь не найден" });
+        }
+
+        res.status(200).json({ message: "Пользователь обновлен" });
+    } catch (err) {
+        console.error("Ошибка БД:", err);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
+
 // Запуск сервера
 app.listen(port, () => {
     console.log(`🚀 Сервер запущен на порту ${port}`);
