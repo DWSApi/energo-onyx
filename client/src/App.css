@@ -341,4 +341,9 @@ button:hover {
     grid-template-columns: repeat(1, 1fr); /* 1 колонки одинаковой ширины */
     justify-items: end;
   }
+
+  .prokrutka {
+    margin-left: -15px;
+    width: 140%;
+  }
 }
