@@ -65,14 +65,9 @@ const AdminPanel = () => {
     
     const handleEditUser = (user) => {
         console.log("Выбранный пользователь перед установкой:", user);
-        // Добавляем защиту, если нет пароля
         setSelectedUser({ ...user, password: user.password || "" }); 
         setIsModalOpen(true);
     };
-    
-    
-    console.log("isModalOpen:", isModalOpen);
-    console.log("selectedUser:", selectedUser);
 
     const handleSaveChanges = async () => {
         const token = localStorage.getItem("token");
@@ -80,108 +75,74 @@ const AdminPanel = () => {
             setError("Токен не найден");
             return;
         }
-
+    
+        const updatedUser = { ...selectedUser };
+        if (!updatedUser.password || updatedUser.password === selectedUser.password) {
+            delete updatedUser.password;
+        }
+    
         try {
-            const updatedUser = await updateUser(selectedUser.id, selectedUser, token);
-            setUsers(prevUsers => prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user));
-            setIsModalOpen(false); // Закрываем модальное окно
+            const updatedData = await updateUser(updatedUser.id, updatedUser, token);
+            setUsers(prevUsers => prevUsers.map(user => user.id === updatedData.id ? updatedData : user));
+            setIsModalOpen(false); 
         } catch (error) {
             setError("Ошибка обновления данных пользователя.");
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setSelectedUser(prev => ({ ...prev, [name]: value }));
-    };
-
-    const togglePasswordVisibility = () => {
-        setShowPassword(prevState => !prevState);
-    };
-
-    console.log("isModalOpen:", isModalOpen);
-    useEffect(() => {
-        console.log("Текущий выбранный пользователь:", selectedUser);
-    }, [selectedUser]);
-    
     return (
         <div className="admin-panel">
             <h2>Панель администратора</h2>
-            {error && <p className="error">{error}</p>}
-            <p>Добро пожаловать, {name}!</p> {/* Добавили приветствие с именем */}
-            {users.length > 0 ? (
-                <ul className="Admins">
-                    {users.map((user) => (
-                        <li key={user.id}>
-                            <img style={{width: "40px"}} src="https://s6.ezgif.com/tmp/ezgif-6-0978c6aea3.gif" alt="Sticker" /> {user.name} ({user.email})
-                            <button className="bntAdm" onClick={() => handleDeleteUser(user.id)}>
-                                Удалить
-                            </button>
-                            <button className="bntAdm" onClick={() => handleEditUser(user)}>
-                                Изменить
-                            </button>
-                        </li>
+            {error && <p>{error}</p>}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Имя</th>
+                        <th>Email</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {users.map(user => (
+                        <tr key={user.id}>
+                            <td>{user.name}</td>
+                            <td>{user.email}</td>
+                            <td>
+                                <button onClick={() => handleEditUser(user)}>Изменить</button>
+                                <button onClick={() => handleDeleteUser(user.id)}>Удалить</button>
+                            </td>
+                        </tr>
                     ))}
-                </ul>
-            ) : (
-                !error && <p>Пользователи не найдены.</p>
-            )}
+                </tbody>
+            </table>
 
-            {/* Модальное окно для редактирования пользователя */}
             {isModalOpen && (
-                <div className="modal11">
-                    <div className="modal-content11">
+                <div className="modal">
+                    <div className="modal-content">
                         <h3>Редактировать пользователя</h3>
-                        <label>
-                            Имя:
-                            <input 
-                                type="text" 
-                                name="name" 
-                                value={selectedUser.name} 
-                                onChange={handleChange} 
-                            />
-                        </label>
-                        <label>
-                            Email:
-                            <input 
-                                type="email" 
-                                name="email" 
-                                value={selectedUser.email} 
-                                onChange={handleChange} 
-                            />
-                        </label>
-                        <label>
-                            Пароль:
-                            <div className="password-container">
-                                <input 
-                                    type={showPassword ? "text" : "password"} 
-                                    name="password" 
-                                    value={selectedUser?.password || ""} // Выводим значение пароля
-                                    onChange={handleChange} 
-                                />
-                                <button type="button" onClick={togglePasswordVisibility}>
-                                    {showPassword ? "Скрыть" : "Показать"}
-                                </button>
-                            </div>
-                        </label>
-                        <label>
-                            Роль:
-                            <select 
-                                name="isAdmin" 
-                                value={selectedUser.isAdmin} 
-                                onChange={handleChange}
-                            >
-                                <option value="0">Пользователь</option>
-                                <option value="1">Админ</option>
-                                <option value="2">Холодка</option>
-                            </select>
-                        </label>
-                        <button className="btn" onClick={handleSaveChanges}>
-                            Сохранить
+                        <label>Имя:</label>
+                        <input
+                            type="text"
+                            value={selectedUser.name}
+                            onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
+                        />
+                        <label>Email:</label>
+                        <input
+                            type="email"
+                            value={selectedUser.email}
+                            onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
+                        />
+                        <label>Пароль:</label>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={selectedUser.password}
+                            onChange={(e) => setSelectedUser({ ...selectedUser, password: e.target.value })}
+                        />
+                        <button onClick={() => setShowPassword(!showPassword)}>
+                            {showPassword ? "Скрыть" : "Показать"} пароль
                         </button>
-                        <button className="btn" onClick={() => setIsModalOpen(false)}>
-                            Отмена
-                        </button>
+                        <button onClick={handleSaveChanges}>Сохранить</button>
+                        <button onClick={() => setIsModalOpen(false)}>Закрыть</button>
                     </div>
                 </div>
             )}

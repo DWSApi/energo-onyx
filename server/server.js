@@ -104,23 +104,6 @@ app.post("/login", async (req, res) => {
     }
 });
 
-// Получение информации о пользователе
-app.get("/account", authenticateToken, async (req, res) => {
-    console.log("✅ Декодированный токен:", req.user);
-
-    try {
-        const [result] = await db.query("SELECT id, name, email, isAdmin FROM Holodka WHERE id = ?", [req.user.id]);
-
-        if (result.length === 0) {
-            return res.status(404).json({ message: "Пользователь не найден" });
-        }
-
-        res.json(result[0]);
-    } catch (err) {
-        res.status(500).json({ error: "Ошибка сервера" });
-    }
-});
-
 // Получение списка пользователей (только админы)
 app.get("/admin/users", authenticateToken, verifyAdmin, async (req, res) => {
     try {
@@ -141,26 +124,18 @@ app.delete("/admin/users/:id", authenticateToken, verifyAdmin, async (req, res) 
     }
 });
 
-// Обслуживание статических файлов
-const clientPath = path.join(__dirname, "..", "client", "build");
-app.use(express.static(clientPath));
-
-app.get("*", (req, res) => {
-    res.sendFile(path.join(clientPath, "index.html"));
-});
-
 // Обновление данных пользователя
 app.put("/users/:id", authenticateToken, async (req, res) => {
     const { name, email } = req.body;
     const userId = req.params.id;
 
-    // Проверка, что обновляются правильные данные
+    console.log("Обновление пользователя:", userId, name, email);  // Логирование данных
+
     if (!name || !email) {
         return res.status(400).json({ error: "Недостаточно данных для обновления" });
     }
 
     try {
-        // Обновляем пользователя в базе данных
         const [result] = await db.query(
             "UPDATE Holodka SET name = ?, email = ? WHERE id = ?",
             [name, email, userId]
@@ -176,7 +151,6 @@ app.put("/users/:id", authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Ошибка сервера" });
     }
 });
-
 
 // Запуск сервера
 app.listen(port, () => {
