@@ -93,7 +93,12 @@ const Header = () => {
   
   return (
     <header className="header">
-      <div>     
+      <div 
+        style={{
+        display: "flex",
+        gap: "20px",
+        alignItems: "center",
+      }}>     
         <div className="logo">Энергосбыт</div>
         <img src={myImage} style={{width: "60px"}} alt="Описание" />
       </div>
