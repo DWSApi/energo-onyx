@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getAllUsers, deleteUser, updateUser } from "./utils/api"; 
 import { useNavigate } from "react-router-dom"; 
 import { useAuth } from "./AuthContext"; // Хук для получения роли
+import "./App.css";
 
 const AdminPanel = () => {
     const [users, setUsers] = useState([]);
