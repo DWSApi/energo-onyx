@@ -61,13 +61,14 @@ const AdminPanel = () => {
             setError("Ошибка удаления пользователя.");
         }
     };
-
     const handleEditUser = (user) => {
         console.log("Выбранный пользователь:", user);
         setSelectedUser(user);
-        console.log("Открытие модального окна для пользователя:", user);
-        setIsModalOpen(true); // Открываем модальное окно
+        setIsModalOpen(true);
     };
+    
+    console.log("isModalOpen:", isModalOpen);
+    console.log("selectedUser:", selectedUser);
 
     const handleSaveChanges = async () => {
         const token = localStorage.getItem("token");
@@ -116,8 +117,8 @@ const AdminPanel = () => {
 
             {/* Модальное окно для редактирования пользователя */}
             {isModalOpen && (
-                <div className="modal">
-                    <div className="modal-content">
+                <div className="modal11">
+                    <div className="modal-content11">
                         <h3>Редактировать пользователя</h3>
                         <label>
                             Имя:

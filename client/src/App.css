@@ -320,24 +320,28 @@ button:hover {
   width: 130%;
 }
 
-.modal {
+.modal11 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 1000;
 }
-.modal-content {
+
+.modal-content11 {
   background: white;
   padding: 20px;
   border-radius: 5px;
   max-width: 500px;
   width: 100%;
+  border: 2px solid red; /* Временная проверка */
 }
+
 
 /* Responsive Styles */
 @media (max-width: 12024px) {
