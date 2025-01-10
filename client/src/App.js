@@ -225,12 +225,19 @@ function Account() {
     return <div className="account"><p>Загрузка...</p></div>;
   }
 
+  const hanleRole = () => {
+    if (isAdmin == 2) {
+      const roles = "Холодка";
+    }
+  };
+
   // Отображение данных аккаунта
   return (
     <div className="account">
       <h2>Мой аккаунт</h2>
       <p>Имя: {account.name}</p>
       <p>Email: {account.email}</p>
+      <p>Роль: {hanleRole}</p>
       <p>Текущий баланс: {account.balance}</p>
       <button className="btn">Заплатить сейчас</button>
       <button className="btn logout" onClick={handleLogout}>Выйти</button>

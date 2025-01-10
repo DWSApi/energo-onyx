@@ -317,7 +317,7 @@ button:hover {
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 10px;
   max-height: 400px;
   overflow-y: auto;
-  width: 120%;
+  width: 130%;
 }
 
 /* Responsive Styles */
