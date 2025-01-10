@@ -737,7 +737,7 @@ function Apps() {
                     boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
                     maxHeight: '400px',
                     overflowY: 'auto',
-                    marginLeft: "-20px",
+                    marginLeft: "-40px",
                     width: '120%', // Увеличена ширина
                   }}
             >
