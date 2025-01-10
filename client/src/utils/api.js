@@ -91,4 +91,22 @@ export const deleteUser = async (id) => {
     }
 };
 
+// utils/api.js
+
+export const updateUser = async (userId, userData, token) => {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/users/${userId}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+    });
+    if (!response.ok) {
+        throw new Error("Failed to update user");
+    }
+    return response.json();
+};
+
+
 export default api;
