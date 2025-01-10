@@ -204,9 +204,11 @@ function Account() {
     navigate("/login");  // Перенаправляем на страницу входа
   };
 
-  if (account.isAdmin == 2) {
-    const roles = "Холодка";
-  }
+  const roles = account?.isAdmin === 2 
+  ? "Холодка" 
+  : account?.isAdmin === 1 
+  ? "Админ" 
+  : "Пользователь";
 
   // Если пользователь не аутентифицирован, показываем кнопки для входа/регистрации
   if (!isAuthenticated) {
