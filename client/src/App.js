@@ -738,7 +738,7 @@ function Apps() {
                     maxHeight: '400px',
                     overflowY: 'auto',
                     marginLeft: "-20px",
-                    width: '150%', // Увеличена ширина
+                    width: '120%', // Увеличена ширина
                   }}
             >
               <h3 className="fw-bold mb-0" style={{ textAlign: 'center', fontSize: '24px', marginBottom: '20px' }}></h3>
