@@ -308,6 +308,18 @@ button:hover {
   flex-direction: column;
 }
 
+.prokrutka {
+  margin-top: 10px;
+  margin-left: -20px;
+  padding: 20px;
+  background-color: rgb(240, 255, 255);
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  width: 120%;
+}
+
 /* Responsive Styles */
 @media (max-width: 12024px) {
   .Admins {

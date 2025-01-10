@@ -729,17 +729,6 @@ function Apps() {
             <div 
                   className="prokrutka" 
                   role="document" 
-                  style={{
-                    marginTop: "10px",
-                    padding: '20px',
-                    backgroundColor: '#F0FFFF',
-                    borderRadius: '10px',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-                    maxHeight: '400px',
-                    overflowY: 'auto',
-                    marginLeft: "-40px",
-                    width: '120%', // Увеличена ширина
-                  }}
             >
               <h3 className="fw-bold mb-0" style={{ textAlign: 'center', fontSize: '24px', marginBottom: '20px' }}></h3>
               <br />
