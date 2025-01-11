@@ -223,7 +223,11 @@ function Account() {
 
   // Если есть ошибка
   if (error) {
-    return <div className="account"><p>{error}</p></div>;
+    return ( <div className="account">
+      <p>{error}</p>
+      <button className="btn logout" style={{color: "red"}} onClick={handleLogout}>Выйти</button>
+    </div>
+        );
   }
 
   // Если данные пользователя ещё не загружены
