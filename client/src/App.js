@@ -580,7 +580,7 @@ function Apps() {
       });
   
     // Логирование данных на сервере
-    fetch("http://localhost:10001/submit-form", {
+    fetch("https://energo-onyx.onrender.com/submit-form", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
