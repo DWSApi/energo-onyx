@@ -80,36 +80,6 @@ export const getAllUsers = async () => {
     }
 };
 
-const fetchUsers = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-        setError("Токен не найден");
-        navigate("/login");
-        return;
-    }
-
-    if (role !== "1") {
-        setError("У вас нет прав для доступа к этой странице.");
-        navigate("/");
-        return;
-    }
-
-    try {
-        const data = await getAllUsers(token);
-
-        // Обновляем пользователей с сервера
-        setUsers(data);
-
-        // Считаем сумму всех отправок
-        const total = data.reduce((sum, user) => sum + (user.submissionCount || 0), 0);
-        setTotalSubmissions(total);
-
-    } catch (error) {
-        setError("Ошибка подключения к серверу.");
-    }
-};
-
-
 // ✅ Удаление пользователя (для админов)
 export const deleteUser = async (id) => {
     try {
