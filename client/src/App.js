@@ -206,7 +206,7 @@ function Account() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("isAdmin");
-    navigate("/login");  // Перенаправляем на страницу входа
+    navigate("/");  // Перенаправляем на страницу входа
     window.location.reload(); // Перезагружаем страницу
   };
 
