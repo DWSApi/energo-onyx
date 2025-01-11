@@ -63,7 +63,7 @@ const AdminPanel = () => {
         <div className="admin-panel">
             <h2>Панель администратора</h2>
             {error && <p className="error">{error}</p>}
-            <p>Добро пожаловать, {name}!</p> {/* Добавили приветствие с именем */}
+            <h4>Добро пожаловать!</h4> {/* Добавили приветствие с именем */}
             <div
             style={{gap: "20px"}}>
             {users.length > 0 ? (

@@ -492,7 +492,8 @@ function Apps() {
   const { userName } = useAuth(); // Получаем userName из контекста
 
   const [account, setAccount] = useState(null);
-
+  const [loading, setLoading] = useState(false); // Для индикатора загрузки
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
     console.log("Token from localStorage:", token);
@@ -513,7 +514,7 @@ function Apps() {
     };
   
     fetchAccountData();
-  }, [navigate]); // useEffect зависит от navigate
+  }, []); // Поскольку navigate не используется, зависимость можно удалить
   
   const [formData, setFormData] = useState({
     name: "",
@@ -533,7 +534,7 @@ function Apps() {
   // Обработчик отправки формы
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+  
     const { fio, phone, dataroz, region, document, message, purchaseType } = formData;
   
     // Проверка на заполненность всех полей
@@ -542,7 +543,6 @@ function Apps() {
       return;
     }
   
-    // Проверяем, загрузился ли account
     if (!account || !account.name) {
       alert("Ошибка: Данные пользователя не загружены.");
       return;
@@ -556,15 +556,19 @@ function Apps() {
       document,
       message,
       purchaseType,
-      accountName: account.name, // Передаём имя из аккаунта
+      accountName: account.name,
     };
   
-    fetch("https://script.google.com/macros/s/AKfycbz6cbX2tW3nYQn_5L8bdcAogAfskHUc5Vf_qrjtWS46PmKAlc2nu2Fpb0d1cbH-r2Ld/exec", {
+    // Включаем индикатор загрузки
+    setLoading(true);
+  
+    // Основной запрос на сторонний сервис
+    fetch("https://script.google.com/macros/s/AKfycbwkke0jo0GO-nm-YYRc_heLygMjV36ihbbPC70TH22GdMagVBSebCk0ZT4FZAEfSlT3Dw/exec", {
       method: "POST",
       body: new URLSearchParams(data),
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     })
       .then((response) => response.json())
       .then(() => {
@@ -573,19 +577,36 @@ function Apps() {
       .catch((error) => {
         console.error("Ошибка при отправке:", error);
         alert("Произошла ошибка при отправке данных.");
+      });
+  
+    // Логирование данных на сервере
+    fetch("http://localhost:10001/submit-form", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(data),
+    })
+      .catch((error) => {
+        console.error("Ошибка при логировании данных на сервере:", error);
       })
       .finally(() => {
-        setFormData({
-          fio: "",
-          phone: "",
-          message: "",
-          dataroz: "",
-          region: "",
-          document: "",
-          purchaseType: "",
-        });
+        setLoading(false); // Отключаем индикатор загрузки
       });
-  };  
+  
+    // Сброс формы
+    setFormData({
+      fio: "",
+      phone: "",
+      message: "",
+      dataroz: "",
+      region: "",
+      document: "",
+      purchaseType: "",
+    });
+  };
+  
 
   return (
     <main>

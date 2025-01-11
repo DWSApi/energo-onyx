@@ -104,6 +104,30 @@ app.post("/login", async (req, res) => {
     }
 });
 
+app.post("/submit-form", authenticateToken, async (req, res) => {
+    const { fio, phone, dataroz, region, document, message, purchaseType, accountName } = req.body;
+
+    // Логирование данных
+    console.log("📋 Получена анкета:");
+    console.log("ФИО:", fio);
+    console.log("Телефон:", phone);
+    console.log("Дата рождения:", dataroz);
+    console.log("Регион:", region);
+    console.log("Документ:", document);
+    console.log("Сообщение:", message);
+    console.log("Тип покупки:", purchaseType);
+    console.log("Имя пользователя из аккаунта:", accountName);
+
+    try {
+        // Вы можете добавить обработку данных, если нужно, но это необязательно
+        res.status(200).json({ message: "Данные анкеты успешно залогированы" });
+    } catch (err) {
+        console.error("Ошибка при логировании анкеты:", err);
+        res.status(500).json({ error: "Ошибка сервера при логировании анкеты" });
+    }
+});
+
+
 // Получение информации о пользователе
 app.get("/account", authenticateToken, async (req, res) => {
     console.log("✅ Декодированный токен:", req.user);
