@@ -78,6 +78,7 @@ app.post("/login", async (req, res) => {
 
     try {
         const [result] = await db.query("SELECT * FROM Holodka WHERE email = ?", [email]);
+
         if (result.length === 0) {
             console.warn("⚠ Пользователь не найден:", email);
             return res.status(404).json({ error: "Пользователь не найден" });
@@ -90,14 +91,14 @@ app.post("/login", async (req, res) => {
             return res.status(401).json({ error: "Неверный пароль" });
         }
 
+        // Логируем успешный вход
+        console.log(`✅ Успешный логин: ${email}, ID пользователя: ${user.id}`);
+
         const token = jwt.sign(
             { id: user.id, name: user.name, email: user.email, isAdmin: user.isAdmin },
             JWT_SECRET,
             { expiresIn: "6h" }
         );
-
-        // Логирование успешного входа
-        console.log(`✅ Успешный логин: ${email}, ID пользователя: ${user.id}`);
 
         res.status(200).json({ token });
     } catch (err) {
@@ -105,6 +106,7 @@ app.post("/login", async (req, res) => {
         res.status(500).json({ error: "Ошибка сервера (БД)" });
     }
 });
+
 
 
 app.post("/submit-form", authenticateToken, async (req, res) => {
@@ -203,8 +205,6 @@ app.put("/users/:id", authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Ошибка сервера" });
     }
 });
-
-
 
 // Запуск сервера
 app.listen(port, () => {
