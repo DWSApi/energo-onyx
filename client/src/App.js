@@ -206,8 +206,8 @@ function Account() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("isAdmin");
-    window.location.reload(); // Перезагружаем страницу
     navigate("/login");  // Перенаправляем на страницу входа
+    window.location.reload(); // Перезагружаем страницу
   };
 
   const roles = account?.isAdmin === 2 
