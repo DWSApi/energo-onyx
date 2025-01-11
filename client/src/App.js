@@ -113,11 +113,11 @@ const Header = () => {
         )}
       </div>
       <nav>
-        <Link to="/">Home</Link>
-        <Link to="/services">Services</Link>
-        <Link to="/account">My Account</Link>
-        {isAuthenticated && role === "2" && <Link to="/apps">User Panel</Link>}
-        {isAuthenticated && role === "1" && <Link to="/admin">Admin Panel</Link>}  {/* Панель администратора */}
+        <Link to="/">Главная</Link>
+        <Link to="/services">Сервисы</Link>
+        <Link to="/account">Мой Аккаунт</Link>
+        {isAuthenticated && role === "2" && <Link to="/apps">Панель Пользователя</Link>}
+        {isAuthenticated && role === "1" && <Link to="/admin">Админ Панель</Link>}  {/* Панель администратора */}
         <button className="btn logout" style={{ color: "red" }} onClick={handleLogout}>Выйти</button>
       </nav>
     </header>
@@ -134,7 +134,11 @@ const ProtectedRoute = ({ children, isAdmin }) => {
 function Home() {
   return (
     <div className="home">
-      <h1>Welcome to EnergoSales</h1>
+        {isAuthenticated && role === "1" ? (
+          <h1>Привет в Роскомнадзоре</h1>
+        ) : (
+          <h1>Привет в Энергасбыте</h1>
+        )}
       <p>Your trusted partner in energy management and sustainable solutions.</p>
       <Link to="/services" className="btn">Explore Our Services</Link>
     </div>
