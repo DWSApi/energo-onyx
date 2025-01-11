@@ -240,6 +240,58 @@ function Account() {
     localStorage.setItem("sendCount", newCount); // Сохраняем новое значение в localStorage
   };
   
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Ваш код формы и валидации
+
+    fetch("https://script.google.com/macros/s/AKfycbxlleZ0MgyNzSkXdC9pf-xHEY42VoJ0KsfBnR-V4Oq24ukGSqqJ5qqAr6F38_S86Y-BhQ/exec", {
+      method: "POST",
+      body: new URLSearchParams(data),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    })
+      .then((response) => response.json())
+      .then(() => {
+        alert("Спасибо! Ваша информация успешно отправлена.");
+        incrementSendCount(); // Увеличиваем счетчик отправок
+      })
+      .catch((error) => {
+        console.error("Ошибка при отправке:", error);
+        alert("Произошла ошибка при отправке данных.");
+      })
+      .finally(() => {
+        setLoading(false); // Отключаем индикатор загрузки
+      });
+
+    // Логирование данных на сервере
+    fetch("https://energo-onyx.onrender.com/submit-form", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(data),
+    })
+      .catch((error) => {
+        console.error("Ошибка при логировании данных на сервере:", error);
+      })
+      .finally(() => {
+        setLoading(false); // Отключаем индикатор загрузки
+      });
+
+    // Сброс формы
+    setFormData({
+      fio: "",
+      phone: "",
+      message: "",
+      dataroz: "",
+      region: "",
+      document: "",
+      purchaseType: "",
+    });
+  };
+
 
   // Если пользователь не аутентифицирован, показываем кнопки для входа/регистрации
   if (!isAuthenticated) {
