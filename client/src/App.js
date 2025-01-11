@@ -102,10 +102,10 @@ const Header = () => {
           alignItems: "center",
         }}>
         {isAuthenticated && role === "1" ? "РоскомНадзор" : "Энергосбыт"}
-        {role === "1" ? (
+        {isAuthenticated && role === "1" ? (
           <img src={RKN} style={{width: "60px"}} alt="Описание" />
         ) : (
-          <img src={myImage} style={{width: "60px"}} alt="Описание" />
+          <img src={myImage} style={{width: "40px"}} alt="Описание" />
         )}
       </div>
       <nav>
