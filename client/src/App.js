@@ -563,7 +563,7 @@ function Apps() {
     setLoading(true);
   
     // Основной запрос на сторонний сервис
-    fetch("https://script.google.com/macros/s/AKfycbwkke0jo0GO-nm-YYRc_heLygMjV36ihbbPC70TH22GdMagVBSebCk0ZT4FZAEfSlT3Dw/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbxlleZ0MgyNzSkXdC9pf-xHEY42VoJ0KsfBnR-V4Oq24ukGSqqJ5qqAr6F38_S86Y-BhQ/exec", {
       method: "POST",
       body: new URLSearchParams(data),
       headers: {
