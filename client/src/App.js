@@ -182,6 +182,10 @@ function Account() {
       return;  // Если нет токена, не продолжаем выполнение
     }
 
+    if (token) {
+      api.defaults.headers["Authorization"] = `Bearer ${token}`;
+  }
+
     // Функция для получения данных пользователя
     const fetchAccountData = async () => {
       try {
@@ -201,6 +205,7 @@ function Account() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("isAdmin");
+    navigate("/");  // Перенаправляем на страницу входа
     navigate("/login");  // Перенаправляем на страницу входа
   };
 
