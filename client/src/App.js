@@ -12,7 +12,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import axios from "axios";  // Добавить эту строку
 import myImage from './onyx.png';
 import api from './utils/api'; // Проверь путь к файлу api.js
-import RKN from './onyx.png';
+import RKN from './RKN.svg';
 
 
 // Основной компонент приложения
