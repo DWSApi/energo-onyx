@@ -1,57 +1,44 @@
 import React, { useState, useEffect } from "react";
 import { getAllUsers, deleteUser } from "./utils/api";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext"; // Хук для получения роли
+import { useAuth } from "./AuthContext";
 
 const AdminPanel = () => {
     const [users, setUsers] = useState([]);
     const [error, setError] = useState("");
-    const [totalSubmissions, setTotalSubmissions] = useState(0); // Добавлено состояние для суммы отправок
+    const [totalSubmissions, setTotalSubmissions] = useState(0);
     const navigate = useNavigate();
-    const { role, isAuthenticated } = useAuth(); // Получаем роль и имя пользователя
+    const { role, isAuthenticated } = useAuth();
 
-    const getUserSubmissionData = (userId) => {
-        const submissionCountKey = `${userId}_submissionCount`;
-        const submissionDateKey = `${userId}_submissionDate`;
-        const submissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0;
-        const lastSubmissionDate = localStorage.getItem(submissionDateKey) || "—";
-        return { submissionCount, lastSubmissionDate };
+    // Функция для загрузки пользователей с сервера
+    const fetchUsers = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setError("Токен не найден");
+            navigate("/login");
+            return;
+        }
+
+        if (role !== "1") {
+            setError("У вас нет прав для доступа к этой странице.");
+            navigate("/");
+            return;
+        }
+
+        try {
+            const data = await getAllUsers(token);
+
+            // Устанавливаем пользователей и подсчитываем общую сумму отправок
+            setUsers(data);
+            const total = data.reduce((sum, user) => sum + (user.submissionCount || 0), 0);
+            setTotalSubmissions(total);
+
+        } catch (error) {
+            setError("Ошибка подключения к серверу.");
+        }
     };
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                setError("Токен не найден");
-                navigate("/login");
-                return;
-            }
-
-            if (role !== "1") { // Если роль не "1", то доступ закрыт
-                setError("У вас нет прав для доступа к этой странице.");
-                navigate("/");
-                return;
-            }
-
-            try {
-                const data = await getAllUsers(token);
-
-                const usersWithSubmissionData = data.map(user => {
-                    const { submissionCount, lastSubmissionDate } = getUserSubmissionData(user.id);
-                    return { ...user, submissionCount, lastSubmissionDate };
-                });
-
-                setUsers(usersWithSubmissionData);
-
-                // Считаем сумму всех отправок
-                const total = usersWithSubmissionData.reduce((sum, user) => sum + user.submissionCount, 0);
-                setTotalSubmissions(total);
-
-            } catch (error) {
-                setError("Ошибка подключения к серверу.");
-            }
-        };
-
         if (isAuthenticated) {
             fetchUsers();
         } else {
@@ -70,15 +57,8 @@ const AdminPanel = () => {
         try {
             const data = await deleteUser(id, token);
             if (data.success) {
-                setUsers(prevUsers => {
-                    const updatedUsers = prevUsers.filter(user => user.id !== id);
-
-                    // Пересчитываем сумму отправок
-                    const total = updatedUsers.reduce((sum, user) => sum + user.submissionCount, 0);
-                    setTotalSubmissions(total);
-
-                    return updatedUsers;
-                });
+                // Обновляем пользователей после удаления
+                fetchUsers();
             } else {
                 setError(data.message || "Не удалось удалить пользователя.");
             }
