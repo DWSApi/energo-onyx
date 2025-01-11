@@ -559,25 +559,22 @@ function Apps() {
     }
   
     // Работа со счётчиком
-    const currentDate = new Date().toLocaleString("ru-RU", {
-      timeZone: "Europe/Kiev", // Указываем Киевскую временную зону
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-    const storedDate = localStorage.getItem("submissionDate");
-    const submissionCount = parseInt(localStorage.getItem("submissionCount"), 10) || 0;
+    const currentDate = new Date().toISOString().split("T")[0]; // Только дата (YYYY-MM-DD)
+    const storedDate = localStorage.getItem("submissionDate") || ""; // Дата последней отправки
+    let submissionCount = parseInt(localStorage.getItem("submissionCount"), 10) || 0; // Счётчик отправок
   
-    // Проверка даты и сброс счётчика, если день изменился
+    // Сброс счётчика, если день изменился
     if (storedDate !== currentDate) {
-      localStorage.setItem("submissionDate", currentDate);
-      localStorage.setItem("submissionCount", "1"); // Начинаем счёт с 1
+      localStorage.setItem("submissionDate", currentDate); // Обновляем дату
+      submissionCount = 1; // Сбрасываем счётчик на 1
+      localStorage.setItem("submissionCount", submissionCount.toString());
     } else {
-      localStorage.setItem("submissionCount", (submissionCount + 1).toString()); // Увеличиваем счётчик
+      // Увеличиваем счётчик, если дата не изменилась
+      submissionCount += 1;
+      localStorage.setItem("submissionCount", submissionCount.toString());
     }
+  
+    console.log(`Счётчик отправок: ${submissionCount}, Дата: ${currentDate}`);
   
     const data = {
       fio,
@@ -601,9 +598,7 @@ function Apps() {
     })
       .then((response) => response.json())
       .then(() => {
-        const currentCount = localStorage.getItem("submissionCount");
-        alert(`Спасибо! Ваша информация успешно отправлена. Отправок за сегодня: ${currentCount}`);
-  
+        alert(`Спасибо! Ваша информация успешно отправлена. Отправок за сегодня: ${submissionCount}`);
         // Очищаем форму только после успешной отправки
         setFormData({
           fio: "",
@@ -623,7 +618,6 @@ function Apps() {
         setLoading(false);
       });
   
-    // Дополнительный запрос на логирование
     fetch("https://energo-onyx.onrender.com/submit-form", {
       method: "POST",
       headers: {
@@ -634,8 +628,8 @@ function Apps() {
     }).catch((error) => {
       console.error("Ошибка при логировании данных на сервере:", error);
     });
-  };  
-
+  };
+  
   return (
     <main>
       <section className="py-5 text-center" style={{backgroundColor: '#F0FFFF',}}>
