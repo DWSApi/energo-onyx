@@ -154,28 +154,14 @@ function Services() {
   );
 }
 
-// Страница с аккаунтом пользователя
 function Account() {
   const [account, setAccount] = useState(null);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth(); // Получаем статус аутентификации
-  const currentCount = localStorage.getItem("submissionCount") || 0;
-  const storedDate = localStorage.getItem("submissionDate") || "—";
   
-  const getAccountData = async (token) => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/account`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Ошибка при запросе аккаунта:", error.response?.data || error.message);
-      throw error;
-    }
-  };
-  
-  
+  const [submissionCount, setSubmissionCount] = useState(0);
+  const [lastSubmissionDate, setLastSubmissionDate] = useState("—");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -187,7 +173,19 @@ function Account() {
 
     if (token) {
       api.defaults.headers["Authorization"] = `Bearer ${token}`;
-  }
+    }
+
+    const getAccountData = async (token) => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/account`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+      } catch (error) {
+        console.error("Ошибка при запросе аккаунта:", error.response?.data || error.message);
+        throw error;
+      }
+    };
 
     // Функция для получения данных пользователя
     const fetchAccountData = async () => {
@@ -195,6 +193,18 @@ function Account() {
         const data = await getAccountData(token);
         console.log("Account data:", data);  // Логируем данные аккаунта
         setAccount(data);  // Устанавливаем данные аккаунта в состояние
+
+        // Используем account.id для уникальных ключей в localStorage
+        const userId = data.id || "defaultUserId";
+        const submissionCountKey = `${userId}_submissionCount`;
+        const submissionDateKey = `${userId}_submissionDate`;
+
+        const storedSubmissionCount = localStorage.getItem(submissionCountKey) || 0;
+        const storedDate = localStorage.getItem(submissionDateKey) || "—";
+
+        setSubmissionCount(parseInt(storedSubmissionCount, 10));
+        setLastSubmissionDate(storedDate);
+
       } catch (error) {
         console.error("Ошибка при получении данных пользователя:", error);
         setError("Ошибка при загрузке данных.");
@@ -202,7 +212,7 @@ function Account() {
     };
 
     fetchAccountData();  // Вызов функции для получения данных
-  }, [navigate]);  // useEffect зависит от navigate (редиректа)
+  }, [navigate]);
 
   // Функция выхода
   const handleLogout = () => {
@@ -213,11 +223,10 @@ function Account() {
   };
 
   const roles = account?.isAdmin === 2 
-  ? "Холодка" 
-  : account?.isAdmin === 1 
-  ? "Админ" 
-  : "Пользователь";
-
+    ? "Холодка" 
+    : account?.isAdmin === 1 
+    ? "Админ" 
+    : "Пользователь";
 
   // Если пользователь не аутентифицирован, показываем кнопки для входа/регистрации
   if (!isAuthenticated) {
@@ -232,11 +241,12 @@ function Account() {
 
   // Если есть ошибка
   if (error) {
-    return ( <div className="account">
-      <p>{error}</p>
-      <button className="btn logout" style={{color: "red"}} onClick={handleLogout}>Выйти</button>
-    </div>
-        );
+    return ( 
+      <div className="account">
+        <p>{error}</p>
+        <button className="btn logout" style={{color: "red"}} onClick={handleLogout}>Выйти</button>
+      </div>
+    );
   }
 
   // Если данные пользователя ещё не загружены
@@ -251,12 +261,14 @@ function Account() {
       <p>Имя:  {account.name}</p>
       <p>Email:  {account.email}</p>
       <p>Роль:  {roles}</p>
-      <p>Отправок за сегодня: {currentCount}</p>
-      <p>Дата последней отправки: {storedDate}</p>
+      <p>Отправок за сегодня: {submissionCount}</p>
+      <p>Дата последней отправки: {lastSubmissionDate}</p>
       <button className="btn logout" onClick={handleLogout}>Выйти</button>
     </div>
   );
 }
+
+
 
 
 // Компонент Footer
@@ -558,20 +570,25 @@ function Apps() {
       return;
     }
   
+    // Уникальный ID пользователя (например, account.id или другой уникальный идентификатор)
+    const userId = account.id || "defaultUserId";  // Замените на ваш уникальный идентификатор
+    const submissionCountKey = `${userId}_submissionCount`;
+    const submissionDateKey = `${userId}_submissionDate`;
+  
     // Работа со счётчиком
     const currentDate = new Date().toISOString().split("T")[0]; // Только дата (YYYY-MM-DD)
-    const storedDate = localStorage.getItem("submissionDate") || ""; // Дата последней отправки
-    let submissionCount = parseInt(localStorage.getItem("submissionCount"), 10) || 0; // Счётчик отправок
+    const storedDate = localStorage.getItem(submissionDateKey) || ""; // Дата последней отправки
+    let submissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0; // Счётчик отправок
   
     // Сброс счётчика, если день изменился
     if (storedDate !== currentDate) {
-      localStorage.setItem("submissionDate", currentDate); // Обновляем дату
+      localStorage.setItem(submissionDateKey, currentDate); // Обновляем дату
       submissionCount = 1; // Сбрасываем счётчик на 1
-      localStorage.setItem("submissionCount", submissionCount.toString());
+      localStorage.setItem(submissionCountKey, submissionCount.toString());
     } else {
       // Увеличиваем счётчик, если дата не изменилась
       submissionCount += 1;
-      localStorage.setItem("submissionCount", submissionCount.toString());
+      localStorage.setItem(submissionCountKey, submissionCount.toString());
     }
   
     console.log(`Счётчик отправок: ${submissionCount}, Дата: ${currentDate}`);
@@ -628,7 +645,7 @@ function Apps() {
     }).catch((error) => {
       console.error("Ошибка при логировании данных на сервере:", error);
     });
-  };
+  };  
   
   return (
     <main>
