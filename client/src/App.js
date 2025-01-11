@@ -160,7 +160,8 @@ function Account() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth(); // Получаем статус аутентификации
-
+  const currentCount = localStorage.getItem("submissionCount") || 0;
+  const storedDate = localStorage.getItem("submissionDate") || "—";
   
   const getAccountData = async (token) => {
     try {
@@ -250,6 +251,8 @@ function Account() {
       <p>Имя:  {account.name}</p>
       <p>Email:  {account.email}</p>
       <p>Роль:  {roles}</p>
+      <p>Отправок за сегодня: {currentCount}</p>
+      <p>Дата последней отправки: {storedDate}</p>
       <button className="btn logout" onClick={handleLogout}>Выйти</button>
     </div>
   );
@@ -545,7 +548,6 @@ function Apps() {
   
     const { fio, phone, dataroz, region, document, message, purchaseType } = formData;
   
-    // Проверка на заполненность всех полей
     if (!fio || !phone || !dataroz || !region || !message || !purchaseType || !document) {
       alert("Пожалуйста, заполните все обязательные поля.");
       return;
@@ -554,6 +556,19 @@ function Apps() {
     if (!account || !account.name) {
       alert("Ошибка: Данные пользователя не загружены.");
       return;
+    }
+  
+    // Работа со счётчиком
+    const currentDate = new Date().toISOString().split("T")[0]; // Текущая дата (YYYY-MM-DD)
+    const storedDate = localStorage.getItem("submissionDate");
+    const submissionCount = parseInt(localStorage.getItem("submissionCount"), 10) || 0;
+  
+    // Проверка даты и сброс счётчика, если день изменился
+    if (storedDate !== currentDate) {
+      localStorage.setItem("submissionDate", currentDate);
+      localStorage.setItem("submissionCount", "1"); // Начинаем счёт с 1
+    } else {
+      localStorage.setItem("submissionCount", (submissionCount + 1).toString()); // Увеличиваем счётчик
     }
   
     const data = {
@@ -567,10 +582,8 @@ function Apps() {
       accountName: account.name,
     };
   
-    // Включаем индикатор загрузки
     setLoading(true);
   
-    // Основной запрос на сторонний сервис
     fetch("https://script.google.com/macros/s/AKfycbxlleZ0MgyNzSkXdC9pf-xHEY42VoJ0KsfBnR-V4Oq24ukGSqqJ5qqAr6F38_S86Y-BhQ/exec", {
       method: "POST",
       body: new URLSearchParams(data),
@@ -580,14 +593,14 @@ function Apps() {
     })
       .then((response) => response.json())
       .then(() => {
-        alert("Спасибо! Ваша информация успешно отправлена.");
+        const currentCount = localStorage.getItem("submissionCount");
+        alert(`Спасибо! Ваша информация успешно отправлена. Отправок за сегодня: ${currentCount}`);
       })
       .catch((error) => {
         console.error("Ошибка при отправке:", error);
         alert("Произошла ошибка при отправке данных.");
       });
   
-    // Логирование данных на сервере
     fetch("https://energo-onyx.onrender.com/submit-form", {
       method: "POST",
       headers: {
@@ -595,15 +608,12 @@ function Apps() {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify(data),
-    })
-      .catch((error) => {
-        console.error("Ошибка при логировании данных на сервере:", error);
-      })
-      .finally(() => {
-        setLoading(false); // Отключаем индикатор загрузки
-      });
+    }).catch((error) => {
+      console.error("Ошибка при логировании данных на сервере:", error);
+    }).finally(() => {
+      setLoading(false);
+    });
   
-    // Сброс формы
     setFormData({
       fio: "",
       phone: "",
@@ -614,6 +624,7 @@ function Apps() {
       purchaseType: "",
     });
   };
+  
   
 
   return (
