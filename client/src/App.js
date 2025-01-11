@@ -11,6 +11,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import axios from "axios";  // Добавить эту строку
 import myImage from './onyx.png';
+import api from './utils/api'; // Проверь путь к файлу api.js
 
 
 // Основной компонент приложения
