@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getAllUsers, deleteUser } from "./utils/api";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "./AuthContext"; // Хук для получения роли
 
 const AdminPanel = () => {
     const [users, setUsers] = useState([]);
@@ -10,7 +10,14 @@ const AdminPanel = () => {
     const navigate = useNavigate();
     const { role, isAuthenticated } = useAuth();
 
-    // Функция для загрузки пользователей с сервера
+    const getUserSubmissionData = (userId) => {
+        const submissionCountKey = `${userId}_submissionCount`;
+        const submissionDateKey = `${userId}_submissionDate`;
+        const submissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0;
+        const lastSubmissionDate = localStorage.getItem(submissionDateKey) || "—";
+        return { submissionCount, lastSubmissionDate };
+    };
+
     const fetchUsers = async () => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -28,9 +35,15 @@ const AdminPanel = () => {
         try {
             const data = await getAllUsers(token);
 
-            // Устанавливаем пользователей и подсчитываем общую сумму отправок
-            setUsers(data);
-            const total = data.reduce((sum, user) => sum + (user.submissionCount || 0), 0);
+            // Обновляем пользователей с сервера
+            const usersWithSubmissionData = data.map(user => {
+                const { submissionCount, lastSubmissionDate } = getUserSubmissionData(user.id);
+                return { ...user, submissionCount, lastSubmissionDate };
+            });
+            setUsers(usersWithSubmissionData);
+
+            // Считаем сумму всех отправок
+            const total = usersWithSubmissionData.reduce((sum, user) => sum + user.submissionCount, 0);
             setTotalSubmissions(total);
 
         } catch (error) {
@@ -55,9 +68,9 @@ const AdminPanel = () => {
         }
 
         try {
-            const data = await deleteUser(id, token);
+            const data = await deleteUser(id);
             if (data.success) {
-                // Обновляем пользователей после удаления
+                // После удаления пользователя повторно загружаем список
                 fetchUsers();
             } else {
                 setError(data.message || "Не удалось удалить пользователя.");
