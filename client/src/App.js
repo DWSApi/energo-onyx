@@ -132,6 +132,8 @@ const ProtectedRoute = ({ children, isAdmin }) => {
 
 // Главная страница
 function Home() {
+  const { role, isAuthenticated } = useAuth();  // Получаем данные из контекста
+
   return (
     <div className="home">
         {isAuthenticated && role === "1" ? (
