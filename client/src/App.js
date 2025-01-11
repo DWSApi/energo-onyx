@@ -559,7 +559,7 @@ function Apps() {
     }
   
     // Работа со счётчиком
-    const currentDate = new Date().toISOString().split("T")[0]; // Текущая дата (YYYY-MM-DD)
+    const currentDate = new Date().toISOString(); // Если нужен полный ISO-формат
     const storedDate = localStorage.getItem("submissionDate");
     const submissionCount = parseInt(localStorage.getItem("submissionCount"), 10) || 0;
   
