@@ -26,6 +26,7 @@ const AdminPanel = () => {
             return;
         }
 
+        // Проверка роли
         if (role !== "1") {
             setError("У вас нет прав для доступа к этой странице.");
             navigate("/");
@@ -33,9 +34,9 @@ const AdminPanel = () => {
         }
 
         try {
-            const data = await getAllUsers(token);
+            const data = await getAllUsers();
 
-            // Обновляем пользователей с сервера
+            // Обновляем пользователей с сервера, добавляя данные о отправках
             const usersWithSubmissionData = data.map(user => {
                 const { submissionCount, lastSubmissionDate } = getUserSubmissionData(user.id);
                 return { ...user, submissionCount, lastSubmissionDate };
@@ -48,6 +49,7 @@ const AdminPanel = () => {
 
         } catch (error) {
             setError("Ошибка подключения к серверу.");
+            console.error("Ошибка при загрузке пользователей:", error);
         }
     };
 
@@ -77,6 +79,7 @@ const AdminPanel = () => {
             }
         } catch (error) {
             setError("Ошибка удаления пользователя.");
+            console.error("Ошибка при удалении пользователя:", error);
         }
     };
 
