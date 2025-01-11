@@ -101,7 +101,11 @@ const Header = () => {
           gap: "20px",
           alignItems: "center",
         }}>
-        {isAuthenticated && role === "1" ? "РоскомНадзор" : "Энергосбыт"}
+        {isAuthenticated && role === "1" ? (
+          <h3>Энергосбыт</h3>
+        ) : (
+          <h3>Роскомнадзор</h3>
+        )}
         {isAuthenticated && role === "1" ? (
           <img src={RKN} style={{width: "60px"}} alt="Описание" />
         ) : (
