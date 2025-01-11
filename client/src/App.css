@@ -272,7 +272,7 @@ button:hover {
 .Admins {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Гибкие колонки */
-  gap: 20px; /* Расстояние между элементами */
+  gap: 40px; /* Расстояние между элементами */
   padding: 10px;
   max-width: 100%;
   box-sizing: border-box; /* Учитываем padding */
@@ -348,6 +348,13 @@ button:hover {
 
 /* Responsive Styles */
 @media (max-width: 12024px) {
+  .Admins {
+    grid-template-columns: repeat(4, 1fr); /* 2 колонки одинаковой ширины */
+    justify-items: end;
+  }
+}
+
+@media (max-width: 1240px) {
   .Admins {
     grid-template-columns: repeat(3, 1fr); /* 2 колонки одинаковой ширины */
     justify-items: end;
