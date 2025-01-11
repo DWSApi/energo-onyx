@@ -102,14 +102,14 @@ const Header = () => {
           alignItems: "center",
         }}>
         {isAuthenticated && role === "1" ? (
-          <h3>Энергосбыт</h3>
-        ) : (
           <h3>Роскомнадзор</h3>
+        ) : (
+          <h3>Энергасбыт</h3>
         )}
         {isAuthenticated && role === "1" ? (
-          <img src={RKN} style={{width: "60px"}} alt="Описание" />
+          <img src={RKN} style={{width: "40px"}} alt="Описание" />
         ) : (
-          <img src={myImage} style={{width: "40px"}} alt="Описание" />
+          <img src={myImage} style={{width: "60px"}} alt="Описание" />
         )}
       </div>
       <nav>
