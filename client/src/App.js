@@ -217,17 +217,6 @@ function Account() {
   ? "Админ" 
   : "Пользователь";
 
-  const [sendCount, setSendCount] = useState(() => {
-    const storedCount = localStorage.getItem("sendCount");
-    return storedCount ? parseInt(storedCount) : 0;
-  });
-  
-  const incrementSendCount = () => {
-    const newCount = sendCount + 1;
-    setSendCount(newCount);
-    localStorage.setItem("sendCount", newCount);
-  };
-  
 
   // Если пользователь не аутентифицирован, показываем кнопки для входа/регистрации
   if (!isAuthenticated) {
