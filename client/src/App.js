@@ -12,6 +12,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import axios from "axios";  // Добавить эту строку
 import myImage from './onyx.png';
 import api from './utils/api'; // Проверь путь к файлу api.js
+import RKN from './onyx.png';
 
 
 // Основной компонент приложения
@@ -58,8 +59,8 @@ const Header = () => {
       throw error;
     }
   };
-  
-  
+
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -91,17 +92,21 @@ const Header = () => {
     navigate("/");  // Перенаправляем на страницу входа
     window.location.reload(); // Перезагружаем страницу
   };
-  
+
   return (
     <header className="header">
-      <div 
+      <div
         style={{
-        display: "flex",
-        gap: "20px",
-        alignItems: "center",
-      }}>     
-        <div className="logo">Энергосбыт</div>
-        <img src={myImage} style={{width: "60px"}} alt="Описание" />
+          display: "flex",
+          gap: "20px",
+          alignItems: "center",
+        }}>
+        {isAuthenticated && role === "1" ? "РоскомНадзор" : "Энергосбыт"}
+        {role === "1" ? (
+          <img src={RKN} style={{width: "60px"}} alt="Описание" />
+        ) : (
+          <img src={myImage} style={{width: "60px"}} alt="Описание" />
+        )}
       </div>
       <nav>
         <Link to="/">Home</Link>
@@ -109,7 +114,7 @@ const Header = () => {
         <Link to="/account">My Account</Link>
         {isAuthenticated && role === "2" && <Link to="/apps">User Panel</Link>}
         {isAuthenticated && role === "1" && <Link to="/admin">Admin Panel</Link>}  {/* Панель администратора */}
-        <button className="btn logout" style={{color: "red"}} onClick={handleLogout}>Выйти</button>
+        <button className="btn logout" style={{ color: "red" }} onClick={handleLogout}>Выйти</button>
       </nav>
     </header>
   );
@@ -159,7 +164,7 @@ function Account() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth(); // Получаем статус аутентификации
-  
+
   const [submissionCount, setSubmissionCount] = useState(0);
   const [lastSubmissionDate, setLastSubmissionDate] = useState("—");
 
@@ -222,11 +227,11 @@ function Account() {
     window.location.reload(); // Перезагружаем страницу
   };
 
-  const roles = account?.isAdmin === 2 
-    ? "Холодка" 
-    : account?.isAdmin === 1 
-    ? "Админ" 
-    : "Пользователь";
+  const roles = account?.isAdmin === 2
+    ? "Холодка"
+    : account?.isAdmin === 1
+      ? "Админ"
+      : "Пользователь";
 
   // Если пользователь не аутентифицирован, показываем кнопки для входа/регистрации
   if (!isAuthenticated) {
@@ -241,10 +246,10 @@ function Account() {
 
   // Если есть ошибка
   if (error) {
-    return ( 
+    return (
       <div className="account">
         <p>{error}</p>
-        <button className="btn logout" style={{color: "red"}} onClick={handleLogout}>Выйти</button>
+        <button className="btn logout" style={{ color: "red" }} onClick={handleLogout}>Выйти</button>
       </div>
     );
   }
@@ -297,8 +302,8 @@ const Modal = ({ id, title, content }) => {
       aria-hidden="true"
     >
       <div className="modal-dialog modal-lg">
-        <div className="modal-content" style={{backgroundColor: '#F0FFFF',}}>
-          <div className="modal-header" style={{backgroundColor: '#F0FFFF',}}>
+        <div className="modal-content" style={{ backgroundColor: '#F0FFFF', }}>
+          <div className="modal-header" style={{ backgroundColor: '#F0FFFF', }}>
             <h5 className="modal-title">{title}</h5>
             <button
               type="button"
@@ -309,10 +314,10 @@ const Modal = ({ id, title, content }) => {
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div className="modal-body" style={{backgroundColor: '#F0FFFF',}}>
+          <div className="modal-body" style={{ backgroundColor: '#F0FFFF', }}>
             <h5>{content}</h5>
           </div>
-          <div className="modal-footer" style={{backgroundColor: '#F0FFFF',}}>
+          <div className="modal-footer" style={{ backgroundColor: '#F0FFFF', }}>
             <button
               type="button"
               className="btn btn-secondary"
@@ -330,35 +335,35 @@ const Modal = ({ id, title, content }) => {
 // Главный компонент
 function Apps() {
 
-          const [users, setUsers] = useState([]);
-          const [error, setError] = useState("");
-          const navigate = useNavigate();
-          const { role, isAuthenticated, name } = useAuth();  // Получаем роль и имя пользователя
-      
-          useEffect(() => {
-              const fetchUsers = async () => {
-                  const token = localStorage.getItem("token");
-                  if (!token) {
-                      setError("Токен не найден");
-                      navigate("/login"); 
-                      return;
-                  }
-      
-                  if (role !== "2") { // Если роль не "1", то доступ закрыт
-                      setError("У вас нет прав для доступа к этой странице.");
-                      navigate("/"); 
-                      return;
-                  }
-              };
-      
-              if (isAuthenticated) { // Проверяем, авторизован ли пользователь
-                  fetchUsers();
-              } else {
-                  setError("Пожалуйста, войдите в систему.");
-                  navigate("/login");
-              }
-          }, [role, isAuthenticated, navigate]);
-          
+  const [users, setUsers] = useState([]);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const { role, isAuthenticated, name } = useAuth();  // Получаем роль и имя пользователя
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Токен не найден");
+        navigate("/login");
+        return;
+      }
+
+      if (role !== "2") { // Если роль не "1", то доступ закрыт
+        setError("У вас нет прав для доступа к этой странице.");
+        navigate("/");
+        return;
+      }
+    };
+
+    if (isAuthenticated) { // Проверяем, авторизован ли пользователь
+      fetchUsers();
+    } else {
+      setError("Пожалуйста, войдите в систему.");
+      navigate("/login");
+    }
+  }, [role, isAuthenticated, navigate]);
+
   // Массив для модальных окон "ДАНЯ"
   const leftModalContent = [
     {
@@ -484,7 +489,7 @@ function Apps() {
       title: "Как я могу удостовериться что вы с Энергосбыта",
       content: (
         <>
-          Ответ: Вы можете найти старый договор, на 6 странице указано 10-ть контактных номеров телефона Энергосбыта, в том числе с которого я связываюсь 
+          Ответ: Вы можете найти старый договор, на 6 странице указано 10-ть контактных номеров телефона Энергосбыта, в том числе с которого я связываюсь
         </>
       )
     },
@@ -516,15 +521,15 @@ function Apps() {
 
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(false); // Для индикатора загрузки
-  
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     console.log("Token from localStorage:", token);
-  
+
     if (!token) {
       return;
     }
-  
+
     const fetchAccountData = async () => {
       try {
         const data = await getAccountData(token);
@@ -535,10 +540,10 @@ function Apps() {
         setError("Ошибка при загрузке данных.");
       }
     };
-  
+
     fetchAccountData();
   }, []); // Поскольку navigate не используется, зависимость можно удалить
-  
+
   const [formData, setFormData] = useState({
     name: "",
     fio: "",
@@ -549,37 +554,37 @@ function Apps() {
     document: "",
     purchaseType: "",
   });
-  
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  
+
   // Обработчик отправки формы
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     const { fio, phone, dataroz, region, document, message, purchaseType } = formData;
-  
+
     if (!fio || !phone || !dataroz || !region || !message || !purchaseType || !document) {
       alert("Пожалуйста, заполните все обязательные поля.");
       return;
     }
-  
+
     if (!account || !account.name) {
       alert("Ошибка: Данные пользователя не загружены.");
       return;
     }
-  
+
     // Уникальный ID пользователя (например, account.id или другой уникальный идентификатор)
     const userId = account.id || "defaultUserId";  // Замените на ваш уникальный идентификатор
     const submissionCountKey = `${userId}_submissionCount`;
     const submissionDateKey = `${userId}_submissionDate`;
-  
+
     // Работа со счётчиком
     const currentDate = new Date().toISOString().split("T")[0]; // Только дата (YYYY-MM-DD)
     const storedDate = localStorage.getItem(submissionDateKey) || ""; // Дата последней отправки
     let submissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0; // Счётчик отправок
-  
+
     // Сброс счётчика, если день изменился
     if (storedDate !== currentDate) {
       localStorage.setItem(submissionDateKey, currentDate); // Обновляем дату
@@ -590,9 +595,9 @@ function Apps() {
       submissionCount += 1;
       localStorage.setItem(submissionCountKey, submissionCount.toString());
     }
-  
+
     console.log(`Счётчик отправок: ${submissionCount}, Дата: ${currentDate}`);
-  
+
     const data = {
       fio,
       phone,
@@ -603,9 +608,9 @@ function Apps() {
       purchaseType,
       accountName: account.name,
     };
-  
+
     setLoading(true);
-  
+
     fetch("https://script.google.com/macros/s/AKfycbxlleZ0MgyNzSkXdC9pf-xHEY42VoJ0KsfBnR-V4Oq24ukGSqqJ5qqAr6F38_S86Y-BhQ/exec", {
       method: "POST",
       body: new URLSearchParams(data),
@@ -634,7 +639,7 @@ function Apps() {
       .finally(() => {
         setLoading(false);
       });
-  
+
     fetch("https://energo-onyx.onrender.com/submit-form", {
       method: "POST",
       headers: {
@@ -645,16 +650,16 @@ function Apps() {
     }).catch((error) => {
       console.error("Ошибка при логировании данных на сервере:", error);
     });
-  };  
-  
+  };
+
   return (
     <main>
-      <section className="py-5 text-center" style={{backgroundColor: '#F0FFFF',}}>
+      <section className="py-5 text-center" style={{ backgroundColor: '#F0FFFF', }}>
         <div className="row">
           {/* Левая часть (4 колонки) с модальными окнами "ДАНЯ" */}
           <div className="col-4">
-          <h3 style={{ color: 'red' }}>Заборы Счётчики</h3>
-          <br></br>
+            <h3 style={{ color: 'red' }}>Заборы Счётчики</h3>
+            <br></br>
             {/* Кнопки и модальные окна для левой части */}
             {leftModalContent.map((modal) => (
               <div key={modal.id}>
@@ -729,7 +734,7 @@ function Apps() {
                       required
                       style={{ padding: '10px', marginBottom: '10px', fontSize: '16px', border: '1px solid #ccc', borderRadius: '5px' }}
                     />
-                                        <input
+                    <input
                       type="text"
                       name="document"
                       value={formData.document}
@@ -786,7 +791,7 @@ function Apps() {
                 name="comment"
                 cols="100"
                 rows="5"
-                style={{ fontSize: "18px", backgroundColor: 'white',}}
+                style={{ fontSize: "18px", backgroundColor: 'white', }}
               />
             </div>
             <div className="d-flex justify-content-center">
@@ -795,9 +800,9 @@ function Apps() {
               </button>
             </div>
             {/* Прокрутка и текст справа */}
-            <div 
-                  className="prokrutka" 
-                  role="document" 
+            <div
+              className="prokrutka"
+              role="document"
             >
               <h3 className="fw-bold mb-0" style={{ textAlign: 'center', fontSize: '24px', marginBottom: '20px' }}></h3>
               <br />
@@ -857,7 +862,7 @@ function Apps() {
                   className="w-75 btn btn-lg btn-primary mb-2"
                   data-bs-toggle="modal"
                   data-bs-target={`#${modal.id}`}
-                  style={{backgroundColor: "red", borderColor: "red", width: '50px'}}
+                  style={{ backgroundColor: "red", borderColor: "red", width: '50px' }}
                 >
                   {modal.title}
                 </button>
