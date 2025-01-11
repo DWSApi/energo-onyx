@@ -559,7 +559,15 @@ function Apps() {
     }
   
     // Работа со счётчиком
-    const currentDate = new Date().toISOString(); // Если нужен полный ISO-формат
+    const currentDate = new Date().toLocaleString("ru-RU", {
+      timeZone: "Europe/Kiev", // Указываем Киевскую временную зону
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
     const storedDate = localStorage.getItem("submissionDate");
     const submissionCount = parseInt(localStorage.getItem("submissionCount"), 10) || 0;
   
@@ -595,12 +603,27 @@ function Apps() {
       .then(() => {
         const currentCount = localStorage.getItem("submissionCount");
         alert(`Спасибо! Ваша информация успешно отправлена. Отправок за сегодня: ${currentCount}`);
+  
+        // Очищаем форму только после успешной отправки
+        setFormData({
+          fio: "",
+          phone: "",
+          message: "",
+          dataroz: "",
+          region: "",
+          document: "",
+          purchaseType: "",
+        });
       })
       .catch((error) => {
         console.error("Ошибка при отправке:", error);
         alert("Произошла ошибка при отправке данных.");
+      })
+      .finally(() => {
+        setLoading(false);
       });
   
+    // Дополнительный запрос на логирование
     fetch("https://energo-onyx.onrender.com/submit-form", {
       method: "POST",
       headers: {
@@ -610,22 +633,8 @@ function Apps() {
       body: JSON.stringify(data),
     }).catch((error) => {
       console.error("Ошибка при логировании данных на сервере:", error);
-    }).finally(() => {
-      setLoading(false);
     });
-  
-    setFormData({
-      fio: "",
-      phone: "",
-      message: "",
-      dataroz: "",
-      region: "",
-      document: "",
-      purchaseType: "",
-    });
-  };
-  
-  
+  };  
 
   return (
     <main>
