@@ -7,7 +7,7 @@ const AdminPanel = () => {
     const [users, setUsers] = useState([]);
     const [error, setError] = useState("");
     const navigate = useNavigate();
-    const { role, isAuthenticated, name } = useAuth();  // Получаем роль и имя пользователя
+    const { role, isAuthenticated } = useAuth();  // Получаем роль и имя пользователя
 
     useEffect(() => {
         const fetchUsers = async () => {

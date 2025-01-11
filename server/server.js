@@ -96,13 +96,16 @@ app.post("/login", async (req, res) => {
             { expiresIn: "6h" }
         );
 
-        console.log("✅ Успешный логин:", email);
+        // Логирование успешного входа
+        console.log(`✅ Успешный логин: ${email}, ID пользователя: ${user.id}`);
+
         res.status(200).json({ token });
     } catch (err) {
         console.error("❌ Ошибка БД:", err);
         res.status(500).json({ error: "Ошибка сервера (БД)" });
     }
 });
+
 
 app.post("/submit-form", authenticateToken, async (req, res) => {
     const { fio, phone, dataroz, region, document, message, purchaseType, accountName } = req.body;
