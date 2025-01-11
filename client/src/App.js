@@ -139,7 +139,7 @@ function Home() {
         {isAuthenticated && role === "1" ? (
           <h1>Привет в Роскомнадзоре</h1>
         ) : (
-          <h1>Привет в Энергасбыте</h1>
+          <h1>Привет в Энергосбыте</h1>
         )}
       <p>Your trusted partner in energy management and sustainable solutions.</p>
       <Link to="/services" className="btn">Explore Our Services</Link>
