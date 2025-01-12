@@ -183,7 +183,7 @@ function Instruction() {
       image1: login1,
       image2: login2 
     },
-    { title: "Что делать если выдаёт ошибку", 
+    { title: "Что делать если выдаёт ошибку Аккаунта", 
       description: "У вас сверху есть Красная кнопка 'Выйти', нажимаете на неё, выходите и заного входите после этого должно быть всё нормально, если выдаёт ошибку или что-то другое пишете в ТГ группу!",
       image1: exitAccount,
     },
@@ -201,8 +201,10 @@ function Instruction() {
           <div key={index} className="card">
             <h3>{instructio.title}</h3>
             <img src={instructio.image1} alt={instructio.title} className="card-image" />
-            <p>{instructio.description}</p>
+            <h5>{instructio.description}</h5>
+            {instructio.image2 && (
             <img src={instructio.image2} alt={instructio.title} className="card-image" />
+            )}
           </div>
         ))}
       </div>
