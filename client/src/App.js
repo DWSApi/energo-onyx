@@ -176,7 +176,7 @@ function Services() {
 function Instruction() {
   const instruction = [
     { title: "Как правильно входить", 
-      description: "В ",
+      description: "В поле Login вводите почту holodka*@gmail.com. Вместо * вводите цыфру которую вам дали за вашим номером как на примере 2-го фото, вместо '45' должен быть ваш номер, в поле Password - вводите пароль который вам дали или который вы поменяли на свой!",
       image1: login1,
       image2: login2 
     },
