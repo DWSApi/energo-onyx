@@ -15,7 +15,7 @@ import api from './utils/api'; // Проверь путь к файлу api.js
 import RKN from './RKN.svg';
 import login1 from './login1.jpg'
 import login2 from './login2.jpg'
-import infoForm from './info.jpg'
+import infoForm from './Info.jpg'
 import formgood from './formgood.jpg'
 import exitAccount from './exitAccount.jpg'
 
