@@ -177,18 +177,18 @@ function Instruction() {
   const instruction = [
     { title: "Как правильно входить", 
       description: "В ",
-      image1: image1,
-      image2: image2 
+      image1: login1,
+      image2: login2 
     },
     { title: "Что делать если выдаёт ошибку", 
       description: "Optimize your energy consumption.",
-      image1: image1,
-      image2: image2
+      image1: login1,
+      image2: login2 
     },
     { title: "Как правильно делать передачи", 
       description: "Switch to renewable energy sources.",
-      image1: image1,
-      image2: image1
+      image1: login1,
+      image2: login2 
     },
   ];
   return (
