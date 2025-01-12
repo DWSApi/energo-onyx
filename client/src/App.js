@@ -800,9 +800,6 @@ function Apps() {
               />
             </div>
             <div className="d-flex justify-content-center">
-              <button type="button" className="btn btn-secondary" id="sendButton2">
-                Отправить
-              </button>
             </div>
             {/* Прокрутка и текст справа */}
             <div
