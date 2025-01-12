@@ -32,9 +32,11 @@ function App() {
             <Route path="/services" element={<Services />} />
             <Route path="/api" element={isAuthenticated && role === "2" ? <DWSApi /> : <Navigate to="/" />} />
             <Route path="/apps" element={isAuthenticated && role === "2" ? <Apps /> : <Navigate to="/" />} />
+            <Route path="/instruction" element={isAuthenticated && role === "2" ? <Instruction /> : <Navigate to="/" />} />
             <Route path="/account" element={<Account />} />
           </Routes>
         </div>
+        <Footer />
       </Router>
     </AuthProvider>
   );
@@ -117,6 +119,7 @@ const Header = () => {
         <Link to="/services">Сервисы</Link>
         <Link to="/account">Мой Аккаунт</Link>
         {isAuthenticated && role === "2" && <Link to="/apps">Панель Пользователя</Link>}
+        {isAuthenticated && role === "2" && <Link to="/instruction">Панель Пользователя</Link>}
         {isAuthenticated && role === "1" && <Link to="/admin">Админ Панель</Link>}  {/* Панель администратора */}
         <button className="btn logout" style={{ color: "red" }} onClick={handleLogout}>Выйти</button>
       </nav>
@@ -162,6 +165,27 @@ function Services() {
           <div key={index} className="card">
             <h3>{service.title}</h3>
             <p>{service.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Instruction() {
+  const instruction = [
+    { title: "Как правильно входить", description: "Manage and pay your bills effortlessly." },
+    { title: "Что делать если выдаёт ошибку", description: "Optimize your energy consumption." },
+    { title: "Как правильно делать передачи", description: "Switch to renewable energy sources." },
+  ];
+  return (
+    <div className="services">
+      <h2>Our Services</h2>
+      <div className="service-cards">
+        {instruction.map((instructio, index) => (
+          <div key={index} className="card">
+            <h3>{instructio.title}</h3>
+            <p>{instructio.description}</p>
           </div>
         ))}
       </div>
