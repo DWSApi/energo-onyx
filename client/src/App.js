@@ -13,7 +13,8 @@ import axios from "axios";  // Добавить эту строку
 import myImage from './onyx.png';
 import api from './utils/api'; // Проверь путь к файлу api.js
 import RKN from './RKN.svg';
-
+import login1 from './login1.jpg'
+import login2 from './login2.jpg'
 
 // Основной компонент приложения
 function App() {
@@ -117,9 +118,9 @@ const Header = () => {
       <nav>
         <Link to="/">Главная</Link>
         <Link to="/services">Сервисы</Link>
+        {isAuthenticated && role === "2" && <Link to="/instruction">Инструкция</Link>}
         <Link to="/account">Мой Аккаунт</Link>
         {isAuthenticated && role === "2" && <Link to="/apps">Панель Пользователя</Link>}
-        {isAuthenticated && role === "2" && <Link to="/instruction">Панель Пользователя</Link>}
         {isAuthenticated && role === "1" && <Link to="/admin">Админ Панель</Link>}  {/* Панель администратора */}
         <button className="btn logout" style={{ color: "red" }} onClick={handleLogout}>Выйти</button>
       </nav>
@@ -174,17 +175,31 @@ function Services() {
 
 function Instruction() {
   const instruction = [
-    { title: "Как правильно входить", description: "Manage and pay your bills effortlessly." },
-    { title: "Что делать если выдаёт ошибку", description: "Optimize your energy consumption." },
-    { title: "Как правильно делать передачи", description: "Switch to renewable energy sources." },
+    { title: "Как правильно входить", 
+      description: "В ",
+      image1: image1,
+      image2: image2 
+    },
+    { title: "Что делать если выдаёт ошибку", 
+      description: "Optimize your energy consumption.",
+      image1: image1,
+      image2: image2
+    },
+    { title: "Как правильно делать передачи", 
+      description: "Switch to renewable energy sources.",
+      image1: image1,
+      image2: image1
+    },
   ];
   return (
     <div className="services">
-      <h2>Our Services</h2>
+      <h2>Инструкции!</h2>
       <div className="service-cards">
         {instruction.map((instructio, index) => (
           <div key={index} className="card">
             <h3>{instructio.title}</h3>
+            <img src={instructio.image1} alt={instructio.title} className="card-image" />
+            <img src={instructio.image2} alt={instructio.title} className="card-image" />
             <p>{instructio.description}</p>
           </div>
         ))}
