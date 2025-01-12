@@ -172,78 +172,74 @@ function Services() {
 function Account() {
   const [account, setAccount] = useState(null);
   const [error, setError] = useState("");
+  const [submissionCount, setSubmissionCount] = useState(0);
+  const [lastSubmissionDate, setLastSubmissionDate] = useState("—");
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth(); // Получаем статус аутентификации
 
-  const [submissionCount, setSubmissionCount] = useState(0);
-  const [lastSubmissionDate, setLastSubmissionDate] = useState("—");
-
   useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log("Token from localStorage:", token);  // Логируем полученный токен
-
     if (!token) {
-      return;  // Если нет токена, не продолжаем выполнение
+      return;
     }
 
-    if (token) {
-      api.defaults.headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const getAccountData = async (token) => {
+    const fetchAccountData = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/account`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        return response.data;
-      } catch (error) {
-        console.error("Ошибка при запросе аккаунта:", error.response?.data || error.message);
-        throw error;
-      }
-    };
+        const data = response.data;
+        setAccount(data);
 
-    // Функция для получения данных пользователя
-    const fetchAccountData = async () => {
-      try {
-        const data = await getAccountData(token);
-        console.log("Account data:", data);  // Логируем данные аккаунта
-        setAccount(data);  // Устанавливаем данные аккаунта в состояние
-
-        // Используем account.id для уникальных ключей в localStorage
+        // Обновление данных счётчика
         const userId = data.id || "defaultUserId";
-        const submissionCountKey = `${userId}_submissionCount`;
-        const submissionDateKey = `${userId}_submissionDate`;
-
-        const storedSubmissionCount = localStorage.getItem(submissionCountKey) || 0;
-        const storedDate = localStorage.getItem(submissionDateKey) || "—";
-
-        setSubmissionCount(parseInt(storedSubmissionCount, 10));
-        setLastSubmissionDate(storedDate);
-
-      } catch (error) {
-        console.error("Ошибка при получении данных пользователя:", error);
+        updateSubmissionData(userId);
+      } catch (err) {
+        console.error("Ошибка при получении данных аккаунта:", err);
         setError("Ошибка при загрузке данных.");
       }
     };
 
-    fetchAccountData();  // Вызов функции для получения данных
-  }, [navigate]);
+    fetchAccountData();
+  }, []);
+
+  // Логика сброса счётчика и обновления состояния
+  const updateSubmissionData = (userId) => {
+    const submissionCountKey = `${userId}_submissionCount`;
+    const submissionDateKey = `${userId}_submissionDate`;
+    const currentDate = new Date().toISOString().split("T")[0];
+    const storedDate = localStorage.getItem(submissionDateKey) || "";
+
+    if (storedDate !== currentDate) {
+      localStorage.setItem(submissionDateKey, currentDate);
+      localStorage.setItem(submissionCountKey, "0");
+    }
+
+    const updatedSubmissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0;
+    setSubmissionCount(updatedSubmissionCount);
+    setLastSubmissionDate(currentDate);
+  };
 
   // Функция выхода
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("isAdmin");
-    navigate("/");  // Перенаправляем на страницу входа
-    window.location.reload(); // Перезагружаем страницу
+    navigate("/");
+    window.location.reload();
   };
 
-  const roles = account?.isAdmin === 2
-    ? "Холодка"
-    : account?.isAdmin === 1
-      ? "Админ"
-      : "Пользователь";
+  const getRoleName = (isAdmin) => {
+    switch (isAdmin) {
+      case 2:
+        return "Холодка";
+      case 1:
+        return "Админ";
+      default:
+        return "Пользователь";
+    }
+  };
 
-  // Если пользователь не аутентифицирован, показываем кнопки для входа/регистрации
+  // Рендеринг
   if (!isAuthenticated) {
     return (
       <div className="account">
@@ -254,7 +250,6 @@ function Account() {
     );
   }
 
-  // Если есть ошибка
   if (error) {
     return (
       <div className="account">
@@ -264,18 +259,18 @@ function Account() {
     );
   }
 
-  // Если данные пользователя ещё не загружены
   if (!account) {
     return <div className="account"><p>Загрузка...</p></div>;
   }
 
-  // Отображение данных аккаунта
+  const roleName = getRoleName(account.isAdmin);
+
   return (
     <div className="account">
       <h2>Мой аккаунт</h2>
-      <p>Имя:  {account.name}</p>
-      <p>Email:  {account.email}</p>
-      <p>Роль:  {roles}</p>
+      <p>Имя: {account.name}</p>
+      <p>Email: {account.email}</p>
+      <p>Роль: {roleName}</p>
       <p>Отправок за сегодня: {submissionCount}</p>
       <p>Дата последней отправки: {lastSubmissionDate}</p>
       <button className="btn logout" onClick={handleLogout}>Выйти</button>
