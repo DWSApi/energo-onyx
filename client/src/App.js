@@ -15,6 +15,9 @@ import api from './utils/api'; // Проверь путь к файлу api.js
 import RKN from './RKN.svg';
 import login1 from './login1.jpg'
 import login2 from './login2.jpg'
+import infoForm from './info.jpg'
+import formgood from './formgood.jpg'
+import exitAccount from './exitAccount.jpg'
 
 // Основной компонент приложения
 function App() {
@@ -181,14 +184,13 @@ function Instruction() {
       image2: login2 
     },
     { title: "Что делать если выдаёт ошибку", 
-      description: "Optimize your energy consumption.",
-      image1: login1,
-      image2: login2 
+      description: "У вас сверху есть Красная кнопка 'Выйти', нажимаете на неё, выходите и заного входите после этого должно быть всё нормально, если выдаёт ошибку или что-то другое пишете в ТГ группу!",
+      image1: exitAccount,
     },
     { title: "Как правильно делать передачи", 
-      description: "Switch to renewable energy sources.",
-      image1: login1,
-      image2: login2 
+      description: "У вас есть ваша Панель Пользователя. Нажимаете на 'Информация о клиенте' заполняете, нажимаете отправить, если у вас вылазить окошко с текстом который ниже показан, всё нормально работаете дальше, если выдаёт ошибку или что-то другое пишете в ТГ группу!",
+      image1: infoForm,
+      image2: formgood 
     },
   ];
   return (
@@ -199,8 +201,8 @@ function Instruction() {
           <div key={index} className="card">
             <h3>{instructio.title}</h3>
             <img src={instructio.image1} alt={instructio.title} className="card-image" />
-            <img src={instructio.image2} alt={instructio.title} className="card-image" />
             <p>{instructio.description}</p>
+            <img src={instructio.image2} alt={instructio.title} className="card-image" />
           </div>
         ))}
       </div>
