@@ -617,7 +617,7 @@ function Apps() {
   // Обработчик отправки формы
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    setIsDisabled(true);
     const { fio, phone, dataroz, region, document, message, purchaseType } = formData;
 
     if (!fio || !phone || !dataroz || !region || !message || !purchaseType || !document) {
@@ -693,6 +693,7 @@ function Apps() {
       })
       .finally(() => {
         setLoading(false);
+        setIsDisabled(false);
       });
 
     fetch("https://energo-onyx.onrender.com/submit-form", {
@@ -830,7 +831,6 @@ function Apps() {
                         cursor: isDisabled ? 'not-allowed' : 'pointer',
                         transition: 'background-color 0.3s'
                       }}
-                    onClick={handleClick} 
                     disabled={isDisabled}
                     >
                       {isDisabled ? "Подождите..." : "Отправить"}
