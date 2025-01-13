@@ -607,6 +607,13 @@ function Apps() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const [isDisabled, setIsDisabled] = useState(false);
+
+  const handleClick = () => {
+    setIsDisabled(true);
+    setTimeout(() => setIsDisabled(false), 5000); // 5 секунд
+  };
+
   // Обработчик отправки формы
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -622,13 +629,6 @@ function Apps() {
       alert("Ошибка: Данные пользователя не загружены.");
       return;
     }
-
-    const [isDisabled, setIsDisabled] = useState(false);
-
-    const handleClick = () => {
-      setIsDisabled(true);
-      setTimeout(() => setIsDisabled(false), 5000); // 5 секунд
-    };
 
     // Уникальный ID пользователя (например, account.id или другой уникальный идентификатор)
     const userId = account.id || "defaultUserId";  // Замените на ваш уникальный идентификатор
@@ -819,19 +819,19 @@ function Apps() {
                     </select>
 
                     <button 
-                    onClick={handleClick} 
-                    disabled={isDisabled}
                       type="submit"
                       style={{
                         padding: '10px 20px',
-                        backgroundColor: '#007bff',
+                        backgroundColor: isDisabled ? '#cccccc' : '#007bff',
                         color: '#fff',
                         fontSize: '16px',
                         border: 'none',
                         borderRadius: '5px',
-                        cursor: 'pointer',
+                        cursor: isDisabled ? 'not-allowed' : 'pointer',
                         transition: 'background-color 0.3s'
                       }}
+                    onClick={handleClick} 
+                    disabled={isDisabled}
                     >
                       {isDisabled ? "Подождите..." : "Отправить"}
                     </button>
