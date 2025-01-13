@@ -623,6 +623,13 @@ function Apps() {
       return;
     }
 
+    const [isDisabled, setIsDisabled] = useState(false);
+
+    const handleClick = () => {
+      setIsDisabled(true);
+      setTimeout(() => setIsDisabled(false), 5000); // 5 секунд
+    };
+
     // Уникальный ID пользователя (например, account.id или другой уникальный идентификатор)
     const userId = account.id || "defaultUserId";  // Замените на ваш уникальный идентификатор
     const submissionCountKey = `${userId}_submissionCount`;
@@ -811,7 +818,9 @@ function Apps() {
                       <option value="Microsip">Microsip</option>
                     </select>
 
-                    <button
+                    <button 
+                    onClick={handleClick} 
+                    disabled={isDisabled}
                       type="submit"
                       style={{
                         padding: '10px 20px',
@@ -824,7 +833,7 @@ function Apps() {
                         transition: 'background-color 0.3s'
                       }}
                     >
-                      Отправить
+                      {isDisabled ? "Подождите..." : "Отправить"}
                     </button>
                   </form>
                 }
