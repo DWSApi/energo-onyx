@@ -666,7 +666,7 @@ function Apps() {
 
     setLoading(true);
 
-    fetch("https://script.google.com/macros/s/AKfycbxlleZ0MgyNzSkXdC9pf-xHEY42VoJ0KsfBnR-V4Oq24ukGSqqJ5qqAr6F38_S86Y-BhQ/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbzc6Q7xeEIdzLOug07p_Cik8xQdX5bGgUh1-y8UYWMZ5o4kOfd27x7o2NvFMngdkWapZA/exec", {
       method: "POST",
       body: new URLSearchParams(data),
       headers: {
