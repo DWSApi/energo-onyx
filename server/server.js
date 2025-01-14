@@ -103,7 +103,7 @@ app.post("/login", async (req, res) => {
 // Получение всех пользователей с их данными об отправках
 app.get("/users", authenticateToken, async (req, res) => {
     try {
-        const users = await db.query("SELECT * FROM Users"); // Запрос всех пользователей
+        const users = await db.query("SELECT * FROM Holodka"); // Запрос всех пользователей
         const userSubmissions = await db.query("SELECT id, count, data FROM Holodka");
 
         const usersWithSubmissions = users.map(user => {
