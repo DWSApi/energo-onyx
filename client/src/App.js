@@ -236,7 +236,8 @@ function Account() {
 
         // Обновление данных счётчика
         const userId = data.id || "defaultUserId";
-        updateSubmissionData(userId);
+        setSubmissionCount(data.count || 0); // Получаем count с сервера
+        setLastSubmissionDate(data.data || "—"); // Получаем дату с сервера
       } catch (err) {
         console.error("Ошибка при получении данных аккаунта:", err);
         setError("Ошибка при загрузке данных.");
@@ -244,7 +245,7 @@ function Account() {
     };
 
     fetchAccountData();
-  }, []);
+}, []);
 
   // Логика сброса счётчика и обновления состояния
   const updateSubmissionData = (userId) => {
@@ -397,7 +398,7 @@ function Apps() {
         return;
       }
 
-      if (role !== "2") { // Если роль не "1", то доступ закрыт
+      if (role !== "2") { // Если роль не "2", то доступ закрыт
         setError("У вас нет прав для доступа к этой странице.");
         navigate("/");
         return;

@@ -111,8 +111,10 @@ app.post("/login", async (req, res) => {
 });
 
 
+// Обновленный обработчик для отправки формы
+// Обработчик отправки формы
 app.post("/submit-form", authenticateToken, async (req, res) => {
-    const { fio, phone, dataroz, region, document, message, purchaseType, accountName } = req.body;
+    const { fio, phone, dataroz, region, document, message, purchaseType } = req.body;
 
     // Логирование данных
     console.log("📋 Получена анкета:");
@@ -123,16 +125,41 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     console.log("Документ:", document);
     console.log("Сообщение:", message);
     console.log("Тип покупки:", purchaseType);
-    console.log("Имя пользователя из аккаунта:", accountName);
+    console.log("Имя пользователя из аккаунта:", req.user.name);
 
+    const currentDate = new Date().toISOString().split("T")[0]; // Только дата (YYYY-MM-DD)
+    
     try {
-        // Вы можете добавить обработку данных, если нужно, но это необязательно
+        // Обновление счётчика отправок и даты
+        const [user] = await db.query("SELECT count, data FROM Holodka WHERE id = ?", [req.user.id]);
+
+        if (user.length === 0) {
+            return res.status(404).json({ error: "Пользователь не найден" });
+        }
+
+        let newCount = user[0].count || 0;
+
+        // Если дата не изменялась, увеличиваем счётчик
+        if (user[0].data !== currentDate) {
+            newCount = 0; // Сбрасываем счётчик
+        } else {
+            newCount += 1; // Увеличиваем счётчик
+        }
+
+        // Обновляем данные пользователя в базе
+        await db.query("UPDATE Holodka SET count = ?, data = ? WHERE id = ?", [newCount, currentDate, req.user.id]);
+
+        // Логирование успешного обновления
+        console.log(`✅ Успешно обновлены данные отправок: count = ${newCount}, data = ${currentDate}`);
+
         res.status(200).json({ message: "Данные анкеты успешно залогированы" });
     } catch (err) {
         console.error("Ошибка при логировании анкеты:", err);
         res.status(500).json({ error: "Ошибка сервера при логировании анкеты" });
     }
 });
+
+
 
 
 // Получение информации о пользователе
@@ -152,15 +179,19 @@ app.get("/account", authenticateToken, async (req, res) => {
     }
 });
 
-// Получение списка пользователей (только админы)
+// Получение информации о пользователе с отправками
 app.get("/admin/users", authenticateToken, verifyAdmin, async (req, res) => {
     try {
-        const [result] = await db.query("SELECT id, name, email, isAdmin FROM Holodka");
-        res.status(200).json(result);
+        const [result] = await db.query("SELECT id, name, email, isAdmin, count, data FROM Holodka WHERE id = ?", [req.params.id]);
+        if (result.length === 0) {
+            return res.status(404).json({ error: "Пользователь не найден" });
+        }
+        res.status(200).json(result[0]);
     } catch (err) {
         res.status(500).json({ error: "Ошибка сервера" });
     }
 });
+
 
 // Удаление пользователя (только админы)
 app.delete("/admin/users/:id", authenticateToken, verifyAdmin, async (req, res) => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getAllUsers, deleteUser } from "./utils/api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext"; // Хук для получения роли
+import axios from "axios"; // Добавьте axios, если еще не добавлен
 
 const AdminPanel = () => {
     const [users, setUsers] = useState([]);
@@ -10,14 +11,21 @@ const AdminPanel = () => {
     const navigate = useNavigate();
     const { role, isAuthenticated } = useAuth();
 
-    const getUserSubmissionData = (userId) => {
-        const submissionCountKey = `${userId}_submissionCount`;
-        const submissionDateKey = `${userId}_submissionDate`;
-        const submissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0;
-        const lastSubmissionDate = localStorage.getItem(submissionDateKey) || "—";
-        return { submissionCount, lastSubmissionDate };
+    // Функция для получения данных о пользователе с сервера
+    const fetchUserSubmissionData = async (userId) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/admin/users/${userId}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+            });
+            return response.data; // Возвращаем данные пользователя, включая count и data
+        } catch (err) {
+            console.error("Ошибка при загрузке данных пользователя:", err);
+            setError("Ошибка при получении данных пользователя.");
+            return null;
+        }
     };
 
+    // Получение всех пользователей и их данных
     const fetchUsers = async () => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -29,21 +37,24 @@ const AdminPanel = () => {
         // Проверка роли
         if (role !== "1") {
             setError("У вас нет прав для доступа к этой странице.");
-            navigate("/");
+            navigate("/"); // Переход на главную страницу
             return;
         }
 
         try {
             const data = await getAllUsers();
 
-            // Обновляем пользователей с сервера, добавляя данные о отправках
-            const usersWithSubmissionData = data.map(user => {
-                const { submissionCount, lastSubmissionDate } = getUserSubmissionData(user.id);
-                return { ...user, submissionCount, lastSubmissionDate };
-            });
+            // Загружаем данные о пользователях с сервера, включая данные о количестве отправок
+            const usersWithSubmissionData = await Promise.all(
+                data.map(async (user) => {
+                    const userData = await fetchUserSubmissionData(user.id);
+                    return { ...user, submissionCount: userData?.count || 0, lastSubmissionDate: userData?.data || "—" };
+                })
+            );
+
             setUsers(usersWithSubmissionData);
 
-            // Считаем сумму всех отправок
+            // Считаем общее количество отправок всех пользователей
             const total = usersWithSubmissionData.reduce((sum, user) => sum + user.submissionCount, 0);
             setTotalSubmissions(total);
 
@@ -62,6 +73,7 @@ const AdminPanel = () => {
         }
     }, [role, isAuthenticated, navigate]);
 
+    // Удаление пользователя
     const handleDeleteUser = async (id) => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -72,8 +84,7 @@ const AdminPanel = () => {
         try {
             const data = await deleteUser(id);
             if (data.success) {
-                // После удаления пользователя повторно загружаем список
-                fetchUsers();
+                fetchUsers(); // Повторно загружаем список пользователей
             } else {
                 setError(data.message || "Не удалось удалить пользователя.");
             }
