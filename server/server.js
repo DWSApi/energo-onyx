@@ -114,7 +114,7 @@ app.post("/login", async (req, res) => {
 app.get("/users", authenticateToken, async (req, res) => {
     try {
         const users = await db.query("SELECT * FROM Users"); // Запрос всех пользователей
-        const userSubmissions = await db.query("SELECT id, count, data FROM SubmissionCounts");
+        const userSubmissions = await db.query("SELECT id, count, data FROM Holodka");
 
         // Сопоставляем данные отправок с пользователями
         const usersWithSubmissions = users.map(user => {
@@ -134,8 +134,8 @@ app.delete("/users/:id", authenticateToken, async (req, res) => {
     const { id } = req.params;
 
     try {
-        await db.query("DELETE FROM Users WHERE id = ?", [id]);
-        await db.query("DELETE FROM SubmissionCounts WHERE id = ?", [id]); // Удаляем данные отправок
+        await db.query("DELETE FROM Holodka WHERE id = ?", [id]);
+        await db.query("DELETE FROM Holodka WHERE id = ?", [id]); // Удаляем данные отправок
 
         res.json({ success: true, message: "Пользователь удален" });
     } catch (err) {
@@ -198,10 +198,7 @@ app.get("/submission-data/:id", authenticateToken, async (req, res) => {
     const userId = req.params.id;  // Исправляем на req.params.id
 
     try {
-        const [result] = await db.query(
-            "SELECT count, data FROM SubmissionCounts WHERE user_id = ?",
-            [userId]
-        );
+        const [result] = await db.query("SELECT count, data FROM Holodka WHERE id = ?", [userId]);
 
         if (result.length === 0) {
             return res.status(404).json({ error: "Данные не найдены для этого пользователя" });
@@ -222,7 +219,7 @@ app.get("/submission-data/:id", authenticateToken, async (req, res) => {
 
     try {
         await db.query(
-            "INSERT INTO SubmissionCounts (user_id, count, data) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE count = ?, data = ?",
+            "INSERT INTO Holodka (id, count, data) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE count = ?, data = ?",
             [userId, count, date, count, date]
         );
 
