@@ -178,7 +178,7 @@ app.get("/account", authenticateToken, async (req, res) => {
 // Получение списка пользователей (только админы)
 app.get("/admin/users", authenticateToken, verifyAdmin, async (req, res) => {
     try {
-        const [result] = await db.query("SELECT id, name, email, isAdmin FROM Holodka");
+        const [result] = await db.query("SELECT id, name, email, isAdmin, count, data FROM Holodka");
         res.status(200).json(result);
     } catch (err) {
         res.status(500).json({ error: "Ошибка сервера" });
