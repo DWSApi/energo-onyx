@@ -6,7 +6,6 @@ import Login from "./Login";
 import AdminPanel from "./Admin";
 import DWSApi from "./adminapp"
 import { getAccountData } from './utils/api'; // Подключение правильного импорта
-import { getUserData, updateUserData  } from './utils/api'; // Подключение правильного импорта
 import { AuthProvider, useAuth } from "./AuthContext"; // Подключаем контекст
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -222,33 +221,30 @@ function Account() {
   const { isAuthenticated } = useAuth(); // Получаем статус аутентификации
 
   useEffect(() => {
-    const fetchUserData = async () => {
-        try {
-            const data = await getUserData();
-            setSubmissionCount(data.count);
-            setLastSubmissionDate(data.date);
-        } catch (error) {
-            console.error("Ошибка загрузки данных:", error);
-            setError("Ошибка при загрузке данных.");
-        }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return;
+    }
+
+    const fetchAccountData = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/account`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = response.data;
+        setAccount(data);
+
+        // Обновление данных счётчика
+        const userId = data.id || "defaultUserId";
+        updateSubmissionData(userId);
+      } catch (err) {
+        console.error("Ошибка при получении данных аккаунта:", err);
+        setError("Ошибка при загрузке данных.");
+      }
     };
 
-    fetchUserData();
-}, []);
-
-const handleFormSubmit = async () => {
-    try {
-        const newCount = submissionCount + 1;
-        const currentDate = new Date().toISOString().split("T")[0];
-
-        await updateUserData({ count: newCount, date: currentDate });
-
-        setSubmissionCount(newCount);
-        setLastSubmissionDate(currentDate);
-    } catch (error) {
-        console.error("Ошибка при обновлении данных:", error);
-    }
-};
+    fetchAccountData();
+  }, []);
 
   // Логика сброса счётчика и обновления состояния
   const updateSubmissionData = (userId) => {

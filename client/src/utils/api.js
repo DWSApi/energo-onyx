@@ -42,29 +42,6 @@ export const register = async (name, email, password) => {
     }
 };
 
-// Получение данных пользователя (count и date)
-export const getUserData = async () => {
-    try {
-        const response = await api.get("/account");
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при получении данных пользователя:", error);
-        throw error;
-    }
-};
-
-// Обновление данных пользователя (count и date)
-export const updateUserData = async (data) => {
-    try {
-        const response = await api.put("/account", data);
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при обновлении данных пользователя:", error);
-        throw error;
-    }
-};
-
-
 // ✅ Вход пользователя
 export const login = async (email, password) => {
     try {

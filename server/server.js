@@ -134,33 +134,6 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     }
 });
 
-// Получение count и date для пользователя
-app.get("/account", authenticateToken, async (req, res) => {
-    try {
-        const [rows] = await db.query("SELECT count, date FROM Holodka WHERE id = ?", [req.user.id]);
-        if (rows.length === 0) {
-            return res.status(404).json({ error: "Данные не найдены" });
-        }
-        res.json(rows[0]);
-    } catch (err) {
-        console.error("Ошибка при получении данных пользователя:", err);
-        res.status(500).json({ error: "Ошибка сервера" });
-    }
-});
-
-// Обновление count и date для пользователя
-app.put("/account", authenticateToken, async (req, res) => {
-    const { count, date } = req.body;
-
-    try {
-        await db.query("UPDATE Holodka SET count = ?, date = ? WHERE id = ?", [count, date, req.user.id]);
-        res.status(200).json({ message: "Данные успешно обновлены" });
-    } catch (err) {
-        console.error("Ошибка при обновлении данных пользователя:", err);
-        res.status(500).json({ error: "Ошибка сервера" });
-    }
-});
-
 
 // Получение информации о пользователе
 app.get("/account", authenticateToken, async (req, res) => {
