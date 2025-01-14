@@ -103,8 +103,8 @@ const AdminPanel = () => {
                                     alt="Sticker"
                                 />
                                 {user.name} ({user.email})
-                                <p>Отправок за сегодня: {user.submissionCount}</p>
-                                <p>Дата последней отправки: {user.lastSubmissionDate}</p>
+                                <p>Отправок за сегодня: {user.count}</p>
+                                <p>Дата последней отправки: {user.data}</p>
                                 <button className="bntAdm" onClick={() => handleDeleteUser(user.id)}>
                                     Удалить
                                 </button>
