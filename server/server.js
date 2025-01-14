@@ -74,29 +74,19 @@ app.post("/register", async (req, res) => {
 // Логин пользователя
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
-    console.log("📩 Получен запрос на логин с данными:");
-    console.log("Email:", email); // Логируем email пользователя
-    console.log("Пароль (не безопасно, но для отладки можно скрыть):", password ? "*****" : "Нет пароля"); // Логируем пароль (важно скрыть в продакшн)
 
     try {
-        // Проверка на существование пользователя в БД
         const [result] = await db.query("SELECT * FROM Holodka WHERE email = ?", [email]);
         if (result.length === 0) {
-            console.warn("⚠ Пользователь с таким email не найден:", email); // Логируем предупреждение, если пользователя нет
             return res.status(404).json({ error: "Пользователь не найден" });
         }
 
         const user = result[0];
 
-        // Проверка пароля
         if (password !== user.password) {
-            console.warn("⚠ Неверный пароль для пользователя:", email); // Логируем, если пароль неверный
             return res.status(401).json({ error: "Неверный пароль" });
         }
 
-        console.log("✅ Успешный логин для пользователя:", email); // Логируем успешный вход
-
-        // Создание токена JWT
         const token = jwt.sign(
             { id: user.id, name: user.name, email: user.email, isAdmin: user.isAdmin },
             JWT_SECRET,
@@ -105,7 +95,7 @@ app.post("/login", async (req, res) => {
 
         res.status(200).json({ token });
     } catch (err) {
-        console.error("❌ Ошибка при обработке запроса:", err); // Логируем ошибку при обработке запроса
+        console.error("Ошибка при обработке запроса:", err);
         res.status(500).json({ error: "Ошибка сервера" });
     }
 });
@@ -116,7 +106,6 @@ app.get("/users", authenticateToken, async (req, res) => {
         const users = await db.query("SELECT * FROM Users"); // Запрос всех пользователей
         const userSubmissions = await db.query("SELECT id, count, data FROM Holodka");
 
-        // Сопоставляем данные отправок с пользователями
         const usersWithSubmissions = users.map(user => {
             const submission = userSubmissions.find(sub => sub.user_id === user.id) || { count: 0, data: '—' };
             return { ...user, submissionCount: submission.count, lastSubmissionDate: submission.data };
@@ -128,43 +117,26 @@ app.get("/users", authenticateToken, async (req, res) => {
     }
 });
 
-
 // Удаление пользователя
 app.delete("/users/:id", authenticateToken, async (req, res) => {
     const { id } = req.params;
 
     try {
+        // Удаление данных пользователя
         await db.query("DELETE FROM Holodka WHERE id = ?", [id]);
-        await db.query("DELETE FROM Holodka WHERE id = ?", [id]); // Удаляем данные отправок
-
         res.json({ success: true, message: "Пользователь удален" });
     } catch (err) {
         res.status(500).json({ error: "Ошибка при удалении пользователя" });
     }
 });
 
-
-
 // Обновление данных о счётчике и дате
 app.post("/submit-form", authenticateToken, async (req, res) => {
     const { fio, phone, dataroz, region, document, message, purchaseType, accountName, userId } = req.body;
 
-    // Логирование данных
-    console.log("📋 Получена анкета:");
-    console.log("ФИО:", fio);
-    console.log("Телефон:", phone);
-    console.log("Дата рождения:", dataroz);
-    console.log("Регион:", region);
-    console.log("Документ:", document);
-    console.log("Сообщение:", message);
-    console.log("Тип покупки:", purchaseType);
-    console.log("Имя пользователя из аккаунта:", accountName);
-
     try {
-        // Получаем текущую дату
         const currentDate = new Date().toISOString().split("T")[0];
 
-        // Проверка наличия записи в базе данных
         const [result] = await db.query("SELECT * FROM Holodka WHERE id = ?", [userId]);
         if (result.length === 0) {
             return res.status(404).json({ error: "Пользователь не найден" });
@@ -172,14 +144,12 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
 
         const user = result[0];
 
-        // Если дата отправки не совпадает с текущей, сбрасываем счётчик
         if (user.data !== currentDate) {
             await db.query(
                 "UPDATE Holodka SET count = 1, data = ? WHERE id = ?",
                 [currentDate, userId]
             );
         } else {
-            // Если дата отправки совпадает, увеличиваем счётчик
             await db.query(
                 "UPDATE Holodka SET count = count + 1 WHERE id = ?",
                 [userId]
@@ -195,7 +165,7 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
 
 // Получение данных о счётчике и дате для пользователя
 app.get("/submission-data/:id", authenticateToken, async (req, res) => {
-    const userId = req.params.id;  // Исправляем на req.params.id
+    const userId = req.params.id;
 
     try {
         const [result] = await db.query("SELECT count, data FROM Holodka WHERE id = ?", [userId]);
@@ -210,11 +180,9 @@ app.get("/submission-data/:id", authenticateToken, async (req, res) => {
     }
 });
 
-
-  
-  // Обновление данных о счётчике и дате
-  app.put("/submission-data/:id", authenticateToken, async (req, res) => {
-    const userId = req.params.id;  // Исправляем на req.params.id
+// Обновление данных о счётчике и дате
+app.put("/submission-data/:id", authenticateToken, async (req, res) => {
+    const userId = req.params.id;
     const { count, date } = req.body;
 
     try {
@@ -229,13 +197,8 @@ app.get("/submission-data/:id", authenticateToken, async (req, res) => {
     }
 });
 
-  
-
-
 // Получение информации о пользователе
 app.get("/account", authenticateToken, async (req, res) => {
-    console.log("✅ Декодированный токен:", req.user);
-
     try {
         const [result] = await db.query("SELECT id, name, email, isAdmin FROM Holodka WHERE id = ?", [req.user.id]);
 
@@ -282,13 +245,11 @@ app.put("/users/:id", authenticateToken, async (req, res) => {
     const { name, email } = req.body;
     const userId = req.params.id;
 
-    // Проверка, что обновляются правильные данные
     if (!name || !email) {
         return res.status(400).json({ error: "Недостаточно данных для обновления" });
     }
 
     try {
-        // Обновляем пользователя в базе данных
         const [result] = await db.query(
             "UPDATE Holodka SET name = ?, email = ? WHERE id = ?",
             [name, email, userId]

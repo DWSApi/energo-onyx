@@ -225,7 +225,7 @@ function Account() {
     if (!token) {
       return;
     }
-
+  
     const fetchAccountData = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/account`, {
@@ -233,16 +233,22 @@ function Account() {
         });
         const data = response.data;
         setAccount(data);
-
+  
         // Обновление данных счётчика из БД
-        const userId = data.id || "defaultUserId";
-        updateSubmissionData(userId);
+        const userId = data.id;
+        const submissionResponse = await axios.get(`${process.env.REACT_APP_API_URL}/submission-data/${userId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+  
+        const { count, date } = submissionResponse.data;
+        setSubmissionCount(count);
+        setLastSubmissionDate(date);
       } catch (err) {
         console.error("Ошибка при получении данных аккаунта:", err);
         setError("Ошибка при загрузке данных.");
       }
     };
-
+  
     fetchAccountData();
   }, []);
 
