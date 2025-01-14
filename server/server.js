@@ -194,7 +194,7 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
 });
 
 // Получение данных о счётчике и дате для пользователя
-app.get("/submission-data/:userId", authenticateToken, async (req, res) => {
+app.get("/submission-data/:id", authenticateToken, async (req, res) => {
     const userId = req.params.userId;
   
     try {
@@ -215,7 +215,7 @@ app.get("/submission-data/:userId", authenticateToken, async (req, res) => {
 
   
   // Обновление данных о счётчике и дате
-app.put("/submission-data/:userId", authenticateToken, async (req, res) => {
+app.put("/submission-data/:id", authenticateToken, async (req, res) => {
     const userId = req.params.userId;
     const { count, date } = req.body;
   
