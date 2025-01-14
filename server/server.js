@@ -125,14 +125,33 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     console.log("Тип покупки:", purchaseType);
     console.log("Имя пользователя из аккаунта:", accountName);
 
+    // Получаем текущую дату
+    const currentDate = new Date().toISOString().split("T")[0]; // Формат YYYY-MM-DD
+
     try {
-        // Вы можете добавить обработку данных, если нужно, но это необязательно
+        // Подготовка данных для записи в БД (count - количество отправок, data - дата)
+        const count = 1;  // Изначально количество отправок
+        const data = currentDate; // Дата отправки
+
+        // Обновляем или добавляем данные в таблицу Holodka
+        const [result] = await db.query(
+            "INSERT INTO Holodka (count, data) VALUES (?, ?) ON DUPLICATE KEY UPDATE count = count + 1, data = ?",
+            [count, data, data]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Ошибка при добавлении данных в базу" });
+        }
+
+        console.log("✅ Данные успешно добавлены в базу данных");
+
         res.status(200).json({ message: "Данные анкеты успешно залогированы" });
     } catch (err) {
         console.error("Ошибка при логировании анкеты:", err);
         res.status(500).json({ error: "Ошибка сервера при логировании анкеты" });
     }
 });
+
 
 
 // Получение информации о пользователе
