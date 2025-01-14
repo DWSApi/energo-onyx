@@ -218,12 +218,14 @@ app.get("/account", authenticateToken, async (req, res) => {
 // Получение списка пользователей (только админы)
 app.get("/admin/users", authenticateToken, verifyAdmin, async (req, res) => {
     try {
-        const [result] = await db.query("SELECT id, name, email, isAdmin, count FROM Holodka");
-        res.status(200).json(result);
+        const [result] = await db.query("SELECT id, name, email, isAdmin, count, data FROM Holodka");
+        res.status(200).json(result); // Возвращаем пользователей и информацию о количестве отправок
     } catch (err) {
+        console.error("Ошибка при получении пользователей:", err);
         res.status(500).json({ error: "Ошибка сервера" });
     }
 });
+
 
 // Удаление пользователя (только админы)
 app.delete("/admin/users/:id", authenticateToken, verifyAdmin, async (req, res) => {

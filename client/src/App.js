@@ -624,11 +624,6 @@ function Apps() {
 
   const [isDisabled, setIsDisabled] = useState(false);
 
-  const handleClick = () => {
-    setIsDisabled(true);
-    setTimeout(() => setIsDisabled(false), 5000); // 5 секунд
-  };
-
   // Обработчик отправки формы
   const handleSubmit = (e) => {
     e.preventDefault();
