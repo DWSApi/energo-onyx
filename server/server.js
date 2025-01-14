@@ -135,7 +135,7 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     const { fio, phone, dataroz, region, document, message, purchaseType, accountName, userId } = req.body;
 
     try {
-        const currentDate = new Date().toISOString().split("T")[0];
+        const currentDate = new Date().toISOString().split("T")[0]; // Текущая дата
 
         const [result] = await db.query("SELECT * FROM Holodka WHERE id = ?", [userId]);
         if (result.length === 0) {
@@ -145,11 +145,13 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
         const user = result[0];
 
         if (user.data !== currentDate) {
+            // Если дата не совпадает, сбрасываем count до 0
             await db.query(
-                "UPDATE Holodka SET count = 1, data = ? WHERE id = ?",
+                "UPDATE Holodka SET count = 0, data = ? WHERE id = ?",
                 [currentDate, userId]
             );
         } else {
+            // Если дата совпадает, увеличиваем count на 1
             await db.query(
                 "UPDATE Holodka SET count = count + 1 WHERE id = ?",
                 [userId]
@@ -162,6 +164,7 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Ошибка сервера при логировании анкеты" });
     }
 });
+
 
 // Получение данных о счётчике и дате для пользователя
 app.get("/submission-data/:id", authenticateToken, async (req, res) => {
