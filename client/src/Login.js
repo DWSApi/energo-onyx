@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { login } from './utils/api';
 import { useNavigate } from 'react-router-dom';
-import jwtDecode from "jwt-decode"; // Исправленный импорт
-import { useAuth } from "./AuthContext"; // Импорт контекста авторизации
+import jwtDecode from "jwt-decode"; // Декодируем JWT токен
+import { useAuth } from "./AuthContext"; // Используем контекст авторизации
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
-    const { updateAuthState } = useAuth(); // Используем функцию для обновления состояния
+    const { updateAuthState } = useAuth(); // Функция для обновления состояния авторизации
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setError("");
+        setError("");  // Сбрасываем ошибку
 
         try {
             const response = await login(email, password);
@@ -21,11 +21,20 @@ const Login = () => {
                 const decodedToken = jwtDecode(response.token); // Декодируем токен
                 const isAdmin = decodedToken.isAdmin || false;
 
-                // Обновляем состояние в контексте
-                updateAuthState(response.token, isAdmin);
+                // Запросим данные пользователя с сервера, включая дату
+                const userDataResponse = await fetch("/account", {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${response.token}`,
+                    }
+                });
+                const userData = await userDataResponse.json();
+
+                // Обновляем состояние в контексте с данными пользователя
+                updateAuthState(response.token, isAdmin, userData);  // Передаем userData с полем 'data'
 
                 navigate("/"); // Перенаправление после успешного логина
-                window.location.reload(); // Перезагружаем страницу
+                window.location.reload(); // Перезагружаем страницу для обновления состояния
             } else {
                 setError("Не удалось войти. Проверьте введенные данные.");
             }
