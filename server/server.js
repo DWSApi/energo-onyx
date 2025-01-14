@@ -128,15 +128,18 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     // Получаем текущую дату
     const currentDate = new Date().toISOString().split("T")[0]; // Формат YYYY-MM-DD
 
+    // Получаем ID пользователя из токена
+    const userId = req.user.id;
+
     try {
         // Подготовка данных для записи в БД (count - количество отправок, data - дата)
         const count = 1;  // Изначально количество отправок
         const data = currentDate; // Дата отправки
 
-        // Обновляем или добавляем данные в таблицу Holodka
+        // Обновляем или добавляем данные в таблицу Holodka для конкретного пользователя
         const [result] = await db.query(
-            "INSERT INTO Holodka (count, data) VALUES (?, ?) ON DUPLICATE KEY UPDATE count = count + 1, data = ?",
-            [count, data, data]
+            "INSERT INTO Holodka (id, count, data) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE count = count + 1, data = ?",
+            [userId, count, data, data]
         );
 
         if (result.affectedRows === 0) {
@@ -151,6 +154,7 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Ошибка сервера при логировании анкеты" });
     }
 });
+
 
 
 
