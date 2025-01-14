@@ -103,30 +103,19 @@ app.post("/login", async (req, res) => {
 // Получение всех пользователей с их данными об отправках
 app.get("/users", authenticateToken, async (req, res) => {
     try {
-        // Запрос всех пользователей
-        const users = await db.query("SELECT id, name, email FROM Users"); // Допустим, у вас есть таблица Users для пользователей
-       
-        // Запрос всех передач и подсчет их количества для каждого пользователя
-        const userSubmissions = await db.query(`
-            SELECT user_id, SUM(count) AS submissionCount, MAX(data) AS lastSubmissionDate 
-            FROM Holodka
-            GROUP BY id
-        `);  // Группируем по user_id и считаем количество (SUM) и дату последней отправки
+        const users = await db.query("SELECT * FROM Holodka"); // Запрос всех пользователей
+        const userSubmissions = await db.query("SELECT id, count, data FROM Holodka");
 
-        // Объединяем данные о пользователях с данными о их отправках
         const usersWithSubmissions = users.map(user => {
-            const submission = userSubmissions.find(sub => sub.user_id === user.id) || { submissionCount: 0, lastSubmissionDate: '—' };
-            return { ...user, submissionCount: submission.submissionCount, lastSubmissionDate: submission.lastSubmissionDate };
+            const submission = userSubmissions.find(sub => sub.user_id === user.id) || { count: 0, data: '—' };
+            return { ...user, submissionCount: submission.count, lastSubmissionDate: submission.data };
         });
 
-        // Отправляем результат клиенту
         res.json(usersWithSubmissions);
     } catch (err) {
-        console.error(err);
         res.status(500).json({ error: "Ошибка при получении данных пользователей" });
     }
 });
-
 
 // Удаление пользователя
 app.delete("/users/:id", authenticateToken, async (req, res) => {
@@ -226,7 +215,7 @@ app.get("/account", authenticateToken, async (req, res) => {
 // Получение списка пользователей (только админы)
 app.get("/admin/users", authenticateToken, verifyAdmin, async (req, res) => {
     try {
-        const [result] = await db.query("SELECT id, name, email, isAdmin FROM Holodka");
+        const [result] = await db.query("SELECT id, name, email, isAdmin, count FROM Holodka");
         res.status(200).json(result);
     } catch (err) {
         res.status(500).json({ error: "Ошибка сервера" });
