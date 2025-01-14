@@ -135,7 +135,7 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
 });
 
 // Получение count и date для пользователя
-app.get("/user-data", authenticateToken, async (req, res) => {
+app.get("/account", authenticateToken, async (req, res) => {
     try {
         const [rows] = await db.query("SELECT count, date FROM Holodka WHERE id = ?", [req.user.id]);
         if (rows.length === 0) {
@@ -149,7 +149,7 @@ app.get("/user-data", authenticateToken, async (req, res) => {
 });
 
 // Обновление count и date для пользователя
-app.put("/user-data", authenticateToken, async (req, res) => {
+app.put("/account", authenticateToken, async (req, res) => {
     const { count, date } = req.body;
 
     try {
