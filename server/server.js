@@ -96,6 +96,12 @@ app.post("/login", async (req, res) => {
 
         console.log("✅ Успешный логин для пользователя:", email); // Логируем успешный вход
 
+        // Получаем текущую дату в формате YYYY-MM-DD
+        const currentDate = new Date().toISOString().split("T")[0]; // Получаем только дату
+
+        // Обновляем дату последнего входа в базе данных
+        await db.query("UPDATE Holodka SET data = ? WHERE id = ?", [currentDate, user.id]);
+
         // Создание токена JWT
         const token = jwt.sign(
             { id: user.id, name: user.name, email: user.email, isAdmin: user.isAdmin },
@@ -111,7 +117,7 @@ app.post("/login", async (req, res) => {
 });
 
 
-// Обновленный обработчик для отправки формы
+
 // Обработчик отправки формы
 app.post("/submit-form", authenticateToken, async (req, res) => {
     const { fio, phone, dataroz, region, document, message, purchaseType } = req.body;
