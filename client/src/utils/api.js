@@ -70,15 +70,21 @@ export const getAccountData = async () => {
 };
 
 // ✅ Получение всех пользователей (для админов)
-export const getAllUsers = async () => {
-    try {
-        const response = await api.get('/admin/users');
-        return response.data;
-    } catch (error) {
-        console.error("Ошибка при получении пользователей:", error);
-        throw error;
+// utils/api.js
+export const getAllUsers = async (token) => {
+    const response = await fetch("/users", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Ошибка загрузки данных");
     }
-};
+    return await response.json();
+  };
+  
+  
 
 // ✅ Удаление пользователя (для админов)
 export const deleteUser = async (id) => {
