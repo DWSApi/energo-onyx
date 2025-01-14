@@ -6,6 +6,7 @@ import Login from "./Login";
 import AdminPanel from "./Admin";
 import DWSApi from "./adminapp"
 import { getAccountData } from './utils/api'; // Подключение правильного импорта
+import { getUserData, updateUserData  } from './utils/api'; // Подключение правильного импорта
 import { AuthProvider, useAuth } from "./AuthContext"; // Подключаем контекст
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
