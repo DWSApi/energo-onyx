@@ -103,19 +103,30 @@ app.post("/login", async (req, res) => {
 // Получение всех пользователей с их данными об отправках
 app.get("/users", authenticateToken, async (req, res) => {
     try {
-        const users = await db.query("SELECT * FROM Holodka"); // Запрос всех пользователей
-        const userSubmissions = await db.query("SELECT id, count, data FROM Holodka");
+        // Запрос всех пользователей
+        const users = await db.query("SELECT id, name, email FROM Users"); // Допустим, у вас есть таблица Users для пользователей
+       
+        // Запрос всех передач и подсчет их количества для каждого пользователя
+        const userSubmissions = await db.query(`
+            SELECT user_id, SUM(count) AS submissionCount, MAX(data) AS lastSubmissionDate 
+            FROM Holodka
+            GROUP BY id
+        `);  // Группируем по user_id и считаем количество (SUM) и дату последней отправки
 
+        // Объединяем данные о пользователях с данными о их отправках
         const usersWithSubmissions = users.map(user => {
-            const submission = userSubmissions.find(sub => sub.user_id === user.id) || { count: 0, data: '—' };
-            return { ...user, submissionCount: submission.count, lastSubmissionDate: submission.data };
+            const submission = userSubmissions.find(sub => sub.user_id === user.id) || { submissionCount: 0, lastSubmissionDate: '—' };
+            return { ...user, submissionCount: submission.submissionCount, lastSubmissionDate: submission.lastSubmissionDate };
         });
 
+        // Отправляем результат клиенту
         res.json(usersWithSubmissions);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: "Ошибка при получении данных пользователей" });
     }
 });
+
 
 // Удаление пользователя
 app.delete("/users/:id", authenticateToken, async (req, res) => {
