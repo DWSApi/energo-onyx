@@ -114,7 +114,7 @@ app.post("/login", async (req, res) => {
 app.get("/users", authenticateToken, async (req, res) => {
     try {
         const users = await db.query("SELECT * FROM Users"); // Запрос всех пользователей
-        const userSubmissions = await db.query("SELECT user_id, count, data FROM SubmissionCounts");
+        const userSubmissions = await db.query("SELECT id, count, data FROM SubmissionCounts");
 
         // Сопоставляем данные отправок с пользователями
         const usersWithSubmissions = users.map(user => {
@@ -135,7 +135,7 @@ app.delete("/users/:id", authenticateToken, async (req, res) => {
 
     try {
         await db.query("DELETE FROM Users WHERE id = ?", [id]);
-        await db.query("DELETE FROM SubmissionCounts WHERE user_id = ?", [id]); // Удаляем данные отправок
+        await db.query("DELETE FROM SubmissionCounts WHERE id = ?", [id]); // Удаляем данные отправок
 
         res.json({ success: true, message: "Пользователь удален" });
     } catch (err) {
