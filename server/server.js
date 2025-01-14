@@ -146,10 +146,10 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
         let newCount = user[0].count || 0;
 
         // Если дата не изменялась, увеличиваем счётчик
-        if (user[0].data !== currentDate) {
-            newCount = 0; // Сбрасываем счётчик
+        if (user[0].data == currentDate) {
+            newCount += 1; // Сбрасываем счётчик
         } else {
-            newCount += 1; // Увеличиваем счётчик
+            newCount = 0; // Увеличиваем счётчик
         }
 
         // Обновляем данные пользователя в базе
