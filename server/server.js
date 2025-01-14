@@ -110,6 +110,40 @@ app.post("/login", async (req, res) => {
     }
 });
 
+// Получение всех пользователей с их данными об отправках
+app.get("/users", authenticateToken, async (req, res) => {
+    try {
+        const users = await db.query("SELECT * FROM Users"); // Запрос всех пользователей
+        const userSubmissions = await db.query("SELECT user_id, count, data FROM SubmissionCounts");
+
+        // Сопоставляем данные отправок с пользователями
+        const usersWithSubmissions = users.map(user => {
+            const submission = userSubmissions.find(sub => sub.user_id === user.id) || { count: 0, data: '—' };
+            return { ...user, submissionCount: submission.count, lastSubmissionDate: submission.data };
+        });
+
+        res.json(usersWithSubmissions);
+    } catch (err) {
+        res.status(500).json({ error: "Ошибка при получении данных пользователей" });
+    }
+});
+
+
+// Удаление пользователя
+app.delete("/users/:id", authenticateToken, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        await db.query("DELETE FROM Users WHERE id = ?", [id]);
+        await db.query("DELETE FROM SubmissionCounts WHERE user_id = ?", [id]); // Удаляем данные отправок
+
+        res.json({ success: true, message: "Пользователь удален" });
+    } catch (err) {
+        res.status(500).json({ error: "Ошибка при удалении пользователя" });
+    }
+});
+
+
 
 // Обновление данных о счётчике и дате
 app.post("/submit-form", authenticateToken, async (req, res) => {
@@ -159,6 +193,44 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     }
 });
 
+// Получение данных о счётчике и дате для пользователя
+app.get("/submission-data/:userId", authenticateToken, async (req, res) => {
+    const userId = req.params.userId;
+  
+    try {
+      const [result] = await db.query(
+        "SELECT count, data FROM SubmissionCounts WHERE user_id = ?",
+        [userId]
+      );
+  
+      if (result.length === 0) {
+        return res.status(404).json({ error: "Данные не найдены для этого пользователя" });
+      }
+  
+      res.json(result[0]);
+    } catch (err) {
+      res.status(500).json({ error: "Ошибка сервера" });
+    }
+  });
+
+  
+  // Обновление данных о счётчике и дате
+app.put("/submission-data/:userId", authenticateToken, async (req, res) => {
+    const userId = req.params.userId;
+    const { count, date } = req.body;
+  
+    try {
+      await db.query(
+        "INSERT INTO SubmissionCounts (user_id, count, data) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE count = ?, data = ?",
+        [userId, count, date, count, date]
+      );
+  
+      res.status(200).json({ message: "Данные обновлены" });
+    } catch (err) {
+      res.status(500).json({ error: "Ошибка сервера" });
+    }
+  });
+  
 
 
 // Получение информации о пользователе
