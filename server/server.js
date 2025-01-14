@@ -132,12 +132,12 @@ app.delete("/users/:id", authenticateToken, async (req, res) => {
 
 // Обновление данных о счётчике и дате
 app.post("/submit-form", authenticateToken, async (req, res) => {
-    const { fio, phone, dataroz, region, document, message, purchaseType, accountName, userId } = req.body;
+    const { fio, phone, dataroz, region, document, message, purchaseType, accountName, id } = req.body;
 
     try {
         const currentDate = new Date().toISOString().split("T")[0]; // Текущая дата
 
-        const [result] = await db.query("SELECT * FROM Holodka WHERE id = ?", [userId]);
+        const [result] = await db.query("SELECT * FROM Holodka WHERE id = ?", [id]);
         if (result.length === 0) {
             return res.status(404).json({ error: "Пользователь не найден" });
         }
@@ -148,13 +148,13 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
             // Если дата не совпадает, сбрасываем count до 0
             await db.query(
                 "UPDATE Holodka SET count = 0, data = ? WHERE id = ?",
-                [currentDate, userId]
+                [currentDate, id]
             );
         } else {
             // Если дата совпадает, увеличиваем count на 1
             await db.query(
                 "UPDATE Holodka SET count = count + 1 WHERE id = ?",
-                [userId]
+                [id]
             );
         }
 
@@ -168,10 +168,10 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
 
 // Получение данных о счётчике и дате для пользователя
 app.get("/submission-data/:id", authenticateToken, async (req, res) => {
-    const userId = req.params.id;
+    const id = req.params.id;
 
     try {
-        const [result] = await db.query("SELECT count, data FROM Holodka WHERE id = ?", [userId]);
+        const [result] = await db.query("SELECT count, data FROM Holodka WHERE id = ?", [id]);
 
         if (result.length === 0) {
             return res.status(404).json({ error: "Данные не найдены для этого пользователя" });
@@ -185,13 +185,13 @@ app.get("/submission-data/:id", authenticateToken, async (req, res) => {
 
 // Обновление данных о счётчике и дате
 app.put("/submission-data/:id", authenticateToken, async (req, res) => {
-    const userId = req.params.id;
+    const id = req.params.id;
     const { count, date } = req.body;
 
     try {
         await db.query(
             "INSERT INTO Holodka (id, count, data) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE count = ?, data = ?",
-            [userId, count, date, count, date]
+            [id, count, date, count, date]
         );
 
         res.status(200).json({ message: "Данные обновлены" });
@@ -248,7 +248,7 @@ app.get("*", (req, res) => {
 // Обновление данных пользователя
 app.put("/users/:id", authenticateToken, async (req, res) => {
     const { name, email } = req.body;
-    const userId = req.params.id;
+    const id = req.params.id;
 
     if (!name || !email) {
         return res.status(400).json({ error: "Недостаточно данных для обновления" });
@@ -257,7 +257,7 @@ app.put("/users/:id", authenticateToken, async (req, res) => {
     try {
         const [result] = await db.query(
             "UPDATE Holodka SET name = ?, email = ? WHERE id = ?",
-            [name, email, userId]
+            [name, email, id]
         );
 
         if (result.affectedRows === 0) {
