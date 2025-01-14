@@ -314,8 +314,8 @@ function Account() {
       <p>Имя: {account.name}</p>
       <p>Email: {account.email}</p>
       <p>Роль: {roleName}</p>
-      <p>Отправок за сегодня: {account.count}</p>
-      <p>Дата последней отправки: {account.data}</p>
+      <p>Отправок за сегодня: {submissionCount}</p>
+      <p>Дата последней отправки: {lastSubmissionDate}</p>
       <button className="btn logout" onClick={handleLogout}>Выйти</button>
     </div>
   );
