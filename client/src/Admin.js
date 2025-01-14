@@ -10,6 +10,14 @@ const AdminPanel = () => {
     const navigate = useNavigate();
     const { role, isAuthenticated } = useAuth();
 
+    const getUserSubmissionData = (userId) => {
+        const submissionCountKey = `${userId}_submissionCount`;
+        const submissionDateKey = `${userId}_submissionDate`;
+        const submissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0;
+        const lastSubmissionDate = localStorage.getItem(submissionDateKey) || "—";
+        return { submissionCount, lastSubmissionDate };
+    };
+
     const fetchUsers = async () => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -26,14 +34,19 @@ const AdminPanel = () => {
         }
 
         try {
-            // Запрос данных о пользователях с их отправками с сервера
-            const data = await getAllUsers(token);
+            const data = await getAllUsers();
+
+            // Обновляем пользователей с сервера, добавляя данные о отправках
+            const usersWithSubmissionData = data.map(user => {
+                const { submissionCount, lastSubmissionDate } = getUserSubmissionData(user.id);
+                return { ...user, submissionCount, lastSubmissionDate };
+            });
+            setUsers(usersWithSubmissionData);
 
             // Считаем сумму всех отправок
-            const total = data.reduce((sum, user) => sum + user.count, 0);
+            const total = usersWithSubmissionData.reduce((sum, user) => sum + user.submissionCount, 0);
             setTotalSubmissions(total);
 
-            setUsers(data);
         } catch (error) {
             setError("Ошибка подключения к серверу.");
             console.error("Ошибка при загрузке пользователей:", error);
@@ -57,7 +70,7 @@ const AdminPanel = () => {
         }
 
         try {
-            const data = await deleteUser(id, token);
+            const data = await deleteUser(id);
             if (data.success) {
                 // После удаления пользователя повторно загружаем список
                 fetchUsers();
@@ -90,8 +103,8 @@ const AdminPanel = () => {
                                     alt="Sticker"
                                 />
                                 {user.name} ({user.email})
-                                <p>Отправок за сегодня: {user.count}</p>
-                                <p>Дата последней отправки: {user.data}</p>
+                                <p>Отправок за сегодня: {user.submissionCount}</p>
+                                <p>Дата последней отправки: {user.lastSubmissionDate}</p>
                                 <button className="bntAdm" onClick={() => handleDeleteUser(user.id)}>
                                     Удалить
                                 </button>

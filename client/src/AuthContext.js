@@ -7,17 +7,15 @@ export const AuthProvider = ({ children }) => {
     const [role, setRole] = useState(null);  // Храним роль пользователя
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userName, setUserName] = useState(null);  // Добавляем поле для имени пользователя
-    const [data, setData] = useState(null);  // Добавляем поле для хранения данных из 'data'
 
     useEffect(() => {
         const token = localStorage.getItem("token");
         const storedRole = localStorage.getItem("role"); // Получаем роль пользователя
         const storedName = localStorage.getItem("name"); // Получаем имя пользователя из localStorage
-        const storedData = localStorage.getItem("data"); // Получаем данные (например, дату) из localStorage
 
+        console.log("userName из localStorage:", storedName); // Лог для отладки
         setRole(storedRole);
         setUserName(storedName); // Устанавливаем имя пользователя
-        setData(storedData); // Устанавливаем данные из 'data'
         setIsAuthenticated(!!token);
     }, []);
 
@@ -32,25 +30,30 @@ export const AuthProvider = ({ children }) => {
             return {};
         }
     };
-
-    const updateAuthState = (token, role, userData) => {
+    
+    
+    const updateAuthState = (token, role) => {
         const decoded = decodeToken(token); // Декодируем токен
         const name = decoded.name || "Гость"; // Извлекаем имя
-        const data = userData.data || null; // Извлекаем поле 'data' из ответа сервера
-
+    
+        console.log("Декодированные данные из токена:", decoded);
+    
         localStorage.setItem("token", token);
         localStorage.setItem("role", role);
-        localStorage.setItem("name", name); // Сохраняем имя пользователя
-        localStorage.setItem("data", data); // Сохраняем поле 'data'
-
+        localStorage.setItem("name", name); // Теперь имя должно сохраняться
+    
         setIsAuthenticated(!!token);
         setRole(role);
         setUserName(name);
-        setData(data); // Обновляем данные
     };
 
+    useEffect(() => {
+        const storedName = localStorage.getItem("name");
+        console.log("Имя пользователя из localStorage:", storedName); 
+    }, []);
+    
     return (
-        <AuthContext.Provider value={{ role, isAuthenticated, userName, data, updateAuthState }}>
+        <AuthContext.Provider value={{ role, isAuthenticated, userName, updateAuthState }}>
             {children}
         </AuthContext.Provider>
     );
