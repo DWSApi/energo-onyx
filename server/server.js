@@ -195,41 +195,43 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
 
 // Получение данных о счётчике и дате для пользователя
 app.get("/submission-data/:id", authenticateToken, async (req, res) => {
-    const userId = req.params.userId;
-  
+    const userId = req.params.id;  // Исправляем на req.params.id
+
     try {
-      const [result] = await db.query(
-        "SELECT count, data FROM SubmissionCounts WHERE user_id = ?",
-        [userId]
-      );
-  
-      if (result.length === 0) {
-        return res.status(404).json({ error: "Данные не найдены для этого пользователя" });
-      }
-  
-      res.json(result[0]);
+        const [result] = await db.query(
+            "SELECT count, data FROM SubmissionCounts WHERE user_id = ?",
+            [userId]
+        );
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: "Данные не найдены для этого пользователя" });
+        }
+
+        res.json(result[0]);
     } catch (err) {
-      res.status(500).json({ error: "Ошибка сервера" });
+        res.status(500).json({ error: "Ошибка сервера" });
     }
-  });
+});
+
 
   
   // Обновление данных о счётчике и дате
-app.put("/submission-data/:id", authenticateToken, async (req, res) => {
-    const userId = req.params.userId;
+  app.put("/submission-data/:id", authenticateToken, async (req, res) => {
+    const userId = req.params.id;  // Исправляем на req.params.id
     const { count, date } = req.body;
-  
+
     try {
-      await db.query(
-        "INSERT INTO SubmissionCounts (user_id, count, data) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE count = ?, data = ?",
-        [userId, count, date, count, date]
-      );
-  
-      res.status(200).json({ message: "Данные обновлены" });
+        await db.query(
+            "INSERT INTO SubmissionCounts (user_id, count, data) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE count = ?, data = ?",
+            [userId, count, date, count, date]
+        );
+
+        res.status(200).json({ message: "Данные обновлены" });
     } catch (err) {
-      res.status(500).json({ error: "Ошибка сервера" });
+        res.status(500).json({ error: "Ошибка сервера" });
     }
-  });
+});
+
   
 
 
