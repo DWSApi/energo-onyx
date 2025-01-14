@@ -70,9 +70,8 @@ export const getAccountData = async () => {
 };
 
 // ✅ Получение всех пользователей (для админов)
-// utils/api.js
 export const getAllUsers = async (token) => {
-    const response = await fetch("/users", {
+    const response = await fetch("/admin/users", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -84,7 +83,8 @@ export const getAllUsers = async (token) => {
     return await response.json();
   };
   
-  
+
+
 
 // ✅ Удаление пользователя (для админов)
 export const deleteUser = async (id) => {
