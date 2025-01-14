@@ -121,8 +121,8 @@ app.post("/login", async (req, res) => {
 // Обработчик отправки формы
 app.post("/submit-form", authenticateToken, async (req, res) => {
     const { fio, phone, dataroz, region, document, message, purchaseType } = req.body;
+    const currentDate = new Date().toISOString().split("T")[0]; // Получаем только дату
 
-    // Логирование данных
     console.log("📋 Получена анкета:");
     console.log("ФИО:", fio);
     console.log("Телефон:", phone);
@@ -131,12 +131,9 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     console.log("Документ:", document);
     console.log("Сообщение:", message);
     console.log("Тип покупки:", purchaseType);
-    console.log("Имя пользователя из аккаунта:", req.user.name);
 
-    const currentDate = new Date().toISOString().split("T")[0]; // Только дата (YYYY-MM-DD)
-    
     try {
-        // Обновление счётчика отправок и даты
+        // Получаем текущие данные пользователя из базы
         const [user] = await db.query("SELECT count, data FROM Holodka WHERE id = ?", [req.user.id]);
 
         if (user.length === 0) {
@@ -146,16 +143,15 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
         let newCount = user[0].count || 0;
 
         // Если дата не изменялась, увеличиваем счётчик
-        if (user[0].data == currentDate) {
-            newCount += 1; // Сбрасываем счётчик
+        if (user[0].data === currentDate) {
+            newCount += 1; // Увеличиваем счётчик
         } else {
-            newCount = 0; // Увеличиваем счётчик
+            newCount = 0; // Если дата изменилась, сбрасываем счётчик
         }
 
-        // Обновляем данные пользователя в базе
+        // Обновляем данные пользователя в базе данных
         await db.query("UPDATE Holodka SET count = ?, data = ? WHERE id = ?", [newCount, currentDate, req.user.id]);
 
-        // Логирование успешного обновления
         console.log(`✅ Успешно обновлены данные отправок: count = ${newCount}, data = ${currentDate}`);
 
         res.status(200).json({ message: "Данные анкеты успешно залогированы" });
@@ -165,6 +161,20 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     }
 });
 
+
+app.get("/account/submissions", authenticateToken, async (req, res) => {
+    try {
+        const [user] = await db.query("SELECT count, data FROM Holodka WHERE id = ?", [req.user.id]);
+
+        if (user.length === 0) {
+            return res.status(404).json({ error: "Пользователь не найден" });
+        }
+
+        res.status(200).json({ count: user[0].count, date: user[0].data });
+    } catch (err) {
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
 
 
 

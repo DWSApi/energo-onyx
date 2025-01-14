@@ -222,30 +222,24 @@ function Account() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      return;
-    }
+    if (!token) return;
 
-    const fetchAccountData = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/account`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = response.data;
-        setAccount(data);
-
-        // Обновление данных счётчика
-        const userId = data.id || "defaultUserId";
-        setSubmissionCount(data.count || 0); // Получаем count с сервера
-        setLastSubmissionDate(data.data || "—"); // Получаем дату с сервера
-      } catch (err) {
-        console.error("Ошибка при получении данных аккаунта:", err);
-        setError("Ошибка при загрузке данных.");
-      }
+    const fetchSubmissionData = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/account/submissions`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setSubmissionCount(response.data.count);
+            setLastSubmissionDate(response.data.date);
+        } catch (err) {
+            console.error("Ошибка при получении данных отправок:", err);
+            setError("Ошибка при загрузке данных.");
+        }
     };
 
-    fetchAccountData();
+    fetchSubmissionData();
 }, []);
+
 
   // Логика сброса счётчика и обновления состояния
   const updateSubmissionData = (userId) => {
@@ -315,8 +309,8 @@ function Account() {
       <p>Имя: {account.name}</p>
       <p>Email: {account.email}</p>
       <p>Роль: {roleName}</p>
-      <p>Отправок за сегодня: {account.count}</p>
-      <p>Дата последней отправки: {account.data}</p>
+      <p>Отправок за сегодня: {submissionCount}</p>
+      <p>Дата последней отправки: {lastSubmissionDate}</p>
       <button className="btn logout" onClick={handleLogout}>Выйти</button>
     </div>
   );
@@ -620,40 +614,18 @@ function Apps() {
     e.preventDefault();
     setIsDisabled(true);
     const { fio, phone, dataroz, region, document, message, purchaseType } = formData;
-
+  
+    // Проверка, чтобы все поля были заполнены
     if (!fio || !phone || !dataroz || !region || !message || !purchaseType || !document) {
       alert("Пожалуйста, заполните все обязательные поля.");
       return;
     }
-
+  
     if (!account || !account.name) {
       alert("Ошибка: Данные пользователя не загружены.");
       return;
     }
-
-    // Уникальный ID пользователя (например, account.id или другой уникальный идентификатор)
-    const userId = account.id || "defaultUserId";  // Замените на ваш уникальный идентификатор
-    const submissionCountKey = `${userId}_submissionCount`;
-    const submissionDateKey = `${userId}_submissionDate`;
-
-    // Работа со счётчиком
-    const currentDate = new Date().toISOString().split("T")[0]; // Только дата (YYYY-MM-DD)
-    const storedDate = localStorage.getItem(submissionDateKey) || ""; // Дата последней отправки
-    let submissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0; // Счётчик отправок
-
-    // Сброс счётчика, если день изменился
-    if (storedDate !== currentDate) {
-      localStorage.setItem(submissionDateKey, currentDate); // Обновляем дату
-      submissionCount = 1; // Сбрасываем счётчик на 1
-      localStorage.setItem(submissionCountKey, submissionCount.toString());
-    } else {
-      // Увеличиваем счётчик, если дата не изменилась
-      submissionCount += 1;
-      localStorage.setItem(submissionCountKey, submissionCount.toString());
-    }
-
-    console.log(`Счётчик отправок: ${submissionCount}, Дата: ${currentDate}`);
-
+  
     const data = {
       fio,
       phone,
@@ -664,51 +636,83 @@ function Apps() {
       purchaseType,
       accountName: account.name,
     };
-
+  
     setLoading(true);
-
-    fetch("https://script.google.com/macros/s/AKfycbzc6Q7xeEIdzLOug07p_Cik8xQdX5bGgUh1-y8UYWMZ5o4kOfd27x7o2NvFMngdkWapZA/exec", {
-      method: "POST",
-      body: new URLSearchParams(data),
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    })
-      .then((response) => response.json())
-      .then(() => {
-        alert(`Спасибо! Ваша информация успешно отправлена. Отправок за сегодня: ${submissionCount}`);
-        // Очищаем форму только после успешной отправки
-        setFormData({
-          fio: "",
-          phone: "",
-          message: "",
-          dataroz: "",
-          region: "",
-          document: "",
-          purchaseType: "",
-        });
-      })
-      .catch((error) => {
-        console.error("Ошибка при отправке:", error);
-        alert("Произошла ошибка при отправке данных.");
-      })
-      .finally(() => {
-        setLoading(false);
-        setIsDisabled(false);
-      });
-
-    fetch("https://energo-onyx.onrender.com/submit-form", {
-      method: "POST",
+  
+    // Запрос для получения текущего количества отправок
+    fetch("https://energo-onyx.onrender.com/account/submissions", {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify(data),
-    }).catch((error) => {
-      console.error("Ошибка при логировании данных на сервере:", error);
-    });
+    })
+      .then((response) => response.json())
+      .then((submissionData) => {
+        const { count, date } = submissionData;
+  
+        // Делаем проверку, если дата изменена, сбрасываем счетчик
+        const currentDate = new Date().toISOString().split("T")[0]; // Только дата (YYYY-MM-DD)
+  
+        let submissionCount = count;
+        if (date !== currentDate) {
+          submissionCount = 1; // Сбрасываем счётчик на 1, если дата изменилась
+        } else {
+          submissionCount += 1; // Увеличиваем счётчик, если дата не изменилась
+        }
+  
+        // Теперь отправляем форму с новым счётчиком
+        fetch("https://script.google.com/macros/s/AKfycbzc6Q7xeEIdzLOug07p_Cik8xQdX5bGgUh1-y8UYWMZ5o4kOfd27x7o2NvFMngdkWapZA/exec", {
+          method: "POST",
+          body: new URLSearchParams(data),
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        })
+          .then((response) => response.json())
+          .then(() => {
+            alert(`Спасибо! Ваша информация успешно отправлена. Отправок за сегодня: ${submissionCount}`);
+            // Очищаем форму только после успешной отправки
+            setFormData({
+              fio: "",
+              phone: "",
+              message: "",
+              dataroz: "",
+              region: "",
+              document: "",
+              purchaseType: "",
+            });
+          })
+          .catch((error) => {
+            console.error("Ошибка при отправке:", error);
+            alert("Произошла ошибка при отправке данных.");
+          })
+          .finally(() => {
+            setLoading(false);
+            setIsDisabled(false);
+          });
+  
+        // Логирование данных на сервере
+        fetch("https://energo-onyx.onrender.com/submit-form", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            ...data,
+            submissionCount, // Отправляем обновлённый счётчик
+          }),
+        }).catch((error) => {
+          console.error("Ошибка при логировании данных на сервере:", error);
+        });
+      })
+      .catch((error) => {
+        console.error("Ошибка при получении данных отправок с сервера:", error);
+        alert("Произошла ошибка при получении данных о ваших отправках.");
+      });
   };
-
+  
   return (
     <main>
       <section className="py-5 text-center" style={{ backgroundColor: '#F0FFFF', }}>
