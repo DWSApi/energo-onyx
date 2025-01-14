@@ -186,7 +186,7 @@ app.get("/account", authenticateToken, async (req, res) => {
 });
 
 // Получение информации о пользователе с отправками
-app.get("/admin/users", authenticateToken, verifyAdmin, async (req, res) => {
+app.get("/admin/users:id", authenticateToken, verifyAdmin, async (req, res) => {
     try {
         const [result] = await db.query("SELECT id, name, email, isAdmin, count, data FROM Holodka WHERE id = ?", [req.params.id]);
         if (result.length === 0) {
