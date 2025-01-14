@@ -234,7 +234,7 @@ function Account() {
         const data = response.data;
         setAccount(data);
 
-        // Обновление данных счётчика
+        // Обновление данных счётчика из БД
         const userId = data.id || "defaultUserId";
         updateSubmissionData(userId);
       } catch (err) {
@@ -246,21 +246,32 @@ function Account() {
     fetchAccountData();
   }, []);
 
-  // Логика сброса счётчика и обновления состояния
-  const updateSubmissionData = (userId) => {
-    const submissionCountKey = `${userId}_submissionCount`;
-    const submissionDateKey = `${userId}_submissionDate`;
-    const currentDate = new Date().toISOString().split("T")[0];
-    const storedDate = localStorage.getItem(submissionDateKey) || "";
+  // Логика обновления счётчика и даты из базы данных
+  const updateSubmissionData = async (userId) => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/submission-data/${userId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
 
-    if (storedDate !== currentDate) {
-      localStorage.setItem(submissionDateKey, currentDate);
-      localStorage.setItem(submissionCountKey, "0");
+      const { count, date } = response.data;
+
+      const currentDate = new Date().toISOString().split("T")[0];
+      if (date !== currentDate) {
+        // Если дата в базе не совпадает с текущей, сбрасываем счётчик
+        await axios.put(`${process.env.REACT_APP_API_URL}/submission-data/${userId}`, {
+          count: 0,
+          date: currentDate,
+        });
+        setSubmissionCount(0);
+        setLastSubmissionDate(currentDate);
+      } else {
+        setSubmissionCount(count);
+        setLastSubmissionDate(date);
+      }
+    } catch (err) {
+      console.error("Ошибка при обновлении данных счётчика:", err);
+      setError("Ошибка при обновлении данных.");
     }
-
-    const updatedSubmissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0;
-    setSubmissionCount(updatedSubmissionCount);
-    setLastSubmissionDate(currentDate);
   };
 
   // Функция выхода
@@ -320,8 +331,6 @@ function Account() {
     </div>
   );
 }
-
-
 
 
 // Компонент Footer
@@ -619,40 +628,20 @@ function Apps() {
     e.preventDefault();
     setIsDisabled(true);
     const { fio, phone, dataroz, region, document, message, purchaseType } = formData;
-
+  
     if (!fio || !phone || !dataroz || !region || !message || !purchaseType || !document) {
       alert("Пожалуйста, заполните все обязательные поля.");
       return;
     }
-
+  
     if (!account || !account.name) {
       alert("Ошибка: Данные пользователя не загружены.");
       return;
     }
-
-    // Уникальный ID пользователя (например, account.id или другой уникальный идентификатор)
-    const userId = account.id || "defaultUserId";  // Замените на ваш уникальный идентификатор
-    const submissionCountKey = `${userId}_submissionCount`;
-    const submissionDateKey = `${userId}_submissionDate`;
-
-    // Работа со счётчиком
-    const currentDate = new Date().toISOString().split("T")[0]; // Только дата (YYYY-MM-DD)
-    const storedDate = localStorage.getItem(submissionDateKey) || ""; // Дата последней отправки
-    let submissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0; // Счётчик отправок
-
-    // Сброс счётчика, если день изменился
-    if (storedDate !== currentDate) {
-      localStorage.setItem(submissionDateKey, currentDate); // Обновляем дату
-      submissionCount = 1; // Сбрасываем счётчик на 1
-      localStorage.setItem(submissionCountKey, submissionCount.toString());
-    } else {
-      // Увеличиваем счётчик, если дата не изменилась
-      submissionCount += 1;
-      localStorage.setItem(submissionCountKey, submissionCount.toString());
-    }
-
-    console.log(`Счётчик отправок: ${submissionCount}, Дата: ${currentDate}`);
-
+  
+    const userId = account.id || "defaultUserId";  // Уникальный ID пользователя
+  
+    // Создаём объект с данными для отправки
     const data = {
       fio,
       phone,
@@ -662,10 +651,11 @@ function Apps() {
       message,
       purchaseType,
       accountName: account.name,
+      userId, // Добавляем ID пользователя
     };
-
+  
     setLoading(true);
-
+  
     fetch("https://script.google.com/macros/s/AKfycbzc6Q7xeEIdzLOug07p_Cik8xQdX5bGgUh1-y8UYWMZ5o4kOfd27x7o2NvFMngdkWapZA/exec", {
       method: "POST",
       body: new URLSearchParams(data),
@@ -675,8 +665,7 @@ function Apps() {
     })
       .then((response) => response.json())
       .then(() => {
-        alert(`Спасибо! Ваша информация успешно отправлена. Отправок за сегодня: ${submissionCount}`);
-        // Очищаем форму только после успешной отправки
+        alert(`Спасибо! Ваша информация успешно отправлена.`);
         setFormData({
           fio: "",
           phone: "",
@@ -695,7 +684,8 @@ function Apps() {
         setLoading(false);
         setIsDisabled(false);
       });
-
+  
+    // Отправляем данные на сервер
     fetch("https://energo-onyx.onrender.com/submit-form", {
       method: "POST",
       headers: {
@@ -707,7 +697,7 @@ function Apps() {
       console.error("Ошибка при логировании данных на сервере:", error);
     });
   };
-
+  
   return (
     <main>
       <section className="py-5 text-center" style={{ backgroundColor: '#F0FFFF', }}>

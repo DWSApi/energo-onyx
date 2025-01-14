@@ -87,7 +87,7 @@ app.post("/login", async (req, res) => {
         }
 
         const user = result[0];
-        
+
         // Проверка пароля
         if (password !== user.password) {
             console.warn("⚠ Неверный пароль для пользователя:", email); // Логируем, если пароль неверный
@@ -111,8 +111,9 @@ app.post("/login", async (req, res) => {
 });
 
 
+// Обновление данных о счётчике и дате
 app.post("/submit-form", authenticateToken, async (req, res) => {
-    const { fio, phone, dataroz, region, document, message, purchaseType, accountName } = req.body;
+    const { fio, phone, dataroz, region, document, message, purchaseType, accountName, userId } = req.body;
 
     // Логирование данных
     console.log("📋 Получена анкета:");
@@ -126,13 +127,38 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     console.log("Имя пользователя из аккаунта:", accountName);
 
     try {
-        // Вы можете добавить обработку данных, если нужно, но это необязательно
+        // Получаем текущую дату
+        const currentDate = new Date().toISOString().split("T")[0];
+
+        // Проверка наличия записи в базе данных
+        const [result] = await db.query("SELECT * FROM Holodka WHERE id = ?", [userId]);
+        if (result.length === 0) {
+            return res.status(404).json({ error: "Пользователь не найден" });
+        }
+
+        const user = result[0];
+
+        // Если дата отправки не совпадает с текущей, сбрасываем счётчик
+        if (user.data !== currentDate) {
+            await db.query(
+                "UPDATE Holodka SET count = 1, data = ? WHERE id = ?",
+                [currentDate, userId]
+            );
+        } else {
+            // Если дата отправки совпадает, увеличиваем счётчик
+            await db.query(
+                "UPDATE Holodka SET count = count + 1 WHERE id = ?",
+                [userId]
+            );
+        }
+
         res.status(200).json({ message: "Данные анкеты успешно залогированы" });
     } catch (err) {
         console.error("Ошибка при логировании анкеты:", err);
         res.status(500).json({ error: "Ошибка сервера при логировании анкеты" });
     }
 });
+
 
 
 // Получение информации о пользователе
