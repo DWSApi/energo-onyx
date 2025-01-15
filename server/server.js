@@ -132,14 +132,19 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     const userId = req.user.id;
 
     try {
-        // Подготовка данных для записи в БД (count - количество отправок, data - дата)
-        const count = 1;  // Изначально количество отправок
-        const data = currentDate; // Дата отправки
-
         // Обновляем или добавляем данные в таблицу Holodka для конкретного пользователя
         const [result] = await db.query(
-            "INSERT INTO Holodka (id, count, data) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE count = count + 1, data = ?",
-            [userId, count, data, data]
+            `
+            INSERT INTO Holodka (id, count, data)
+            VALUES (?, 1, ?)
+            ON DUPLICATE KEY UPDATE
+                count = CASE
+                    WHEN data = ? THEN count + 1
+                    ELSE 1
+                END,
+                data = ?
+            `,
+            [userId, currentDate, currentDate, currentDate]
         );
 
         if (result.affectedRows === 0) {
