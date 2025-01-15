@@ -8,6 +8,7 @@ build/
 # Logs
 logs
 *.log
+.env
 
 # Build output
 build
