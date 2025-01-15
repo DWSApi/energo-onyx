@@ -168,7 +168,7 @@ app.get("/account", authenticateToken, async (req, res) => {
     console.log("✅ Декодированный токен:", req.user);
 
     try {
-        const [result] = await db.query("SELECT id, name, email, isAdmin FROM Holodka WHERE id = ?", [req.user.id]);
+        const [result] = await db.query("SELECT id, name, email, isAdmin, count, data FROM Holodka WHERE id = ?", [req.user.id]);
 
         if (result.length === 0) {
             return res.status(404).json({ message: "Пользователь не найден" });
