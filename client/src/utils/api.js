@@ -108,5 +108,28 @@ export const updateUser = async (userId, userData, token) => {
     return response.json();
 };
 
+// Обнуление количества отправок
+export const resetSubmissionsAPI = async () => {
+    try {
+        const response = await api.put('/admin/reset-submissions');
+        return response.data;
+    } catch (error) {
+        console.error("Ошибка при обнулении отправок:", error.response?.data || error.message);
+        throw new Error(error.response?.data?.error || "Ошибка обнуления отправок");
+    }
+};
+
+// Установка текущей даты
+export const setTodayAPI = async () => {
+    try {
+        const response = await api.put('/admin/set-today');
+        return response.data;
+    } catch (error) {
+        console.error("Ошибка при установке текущей даты:", error.response?.data || error.message);
+        throw new Error(error.response?.data?.error || "Ошибка установки текущей даты");
+    }
+};
+
+
 
 export default api;
