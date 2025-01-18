@@ -29,7 +29,7 @@ const AdminPanel = () => {
             const data = await getAllUsers();
 
             // Считаем сумму всех отправок и обновляем пользователей
-            const total = data.reduce((sum, user) => sum + user.submissionCount, 0);
+            const total = data.reduce((sum, user) => sum + user.count, 0);
             setUsers(data);
             setTotalSubmissions(total);
         } catch (error) {
