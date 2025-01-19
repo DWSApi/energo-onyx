@@ -17,9 +17,9 @@ import login1 from './login1.jpg'
 import login2 from './login2.jpg'
 import infoForm from './Info.jpg'
 import formgood from './formgood.jpg'
-import UploadLeads from "./components/UploadLeads";
-import AssignLeads from "./components/AssignLeads";
-import MyLeads from "./components/MyLeads";
+import UploadLeads from "./UploadLeads";
+import AssignLeads from "./AssignLeads";
+import MyLeads from "./MyLeads";
 import exitAccount from './exitAccount.jpg'
 
 // Основной компонент приложения
