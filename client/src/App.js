@@ -18,9 +18,8 @@ import login2 from './login2.jpg'
 import infoForm from './Info.jpg'
 import formgood from './formgood.jpg'
 import UploadLeads from "./UploadLeads";
-import AssignLeads from "./AssignLeads";
+import AssignLeads from "./AssignLead";
 import MyLeads from "./MyLeads";
-import exitAccount from './exitAccount.jpg'
 
 // Основной компонент приложения
 function App() {
