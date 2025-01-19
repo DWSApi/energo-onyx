@@ -6,7 +6,7 @@ const LeadsTable = () => {
 
     useEffect(() => {
         const fetchLeads = async () => {
-            const { data } = await axios.get('http://localhost:5000/api/leads');
+            const { data } = await axios.get('hhttps://energo-onyx.onrender.com/api/leads');
             setLeads(data);
         };
 
