@@ -74,10 +74,19 @@ app.post("/leads/upload", authenticateToken, verifyAdmin, upload.single("file"),
         const sheetName = workbook.SheetNames[0];
         const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
+        // Обработка данных с учетом новых колонок
+        const leads = data.map((row) => [
+            row["ФИО"], // fio
+            row["Номер"], // phone
+            row["Почта"] || null, // email
+            row["Дата рождения (MM/DD/YYYY)"] || null, // birthdate
+            row["Оператор"] || null, // operator
+            row["Регион"] || null, // region
+        ]);
+
         // Добавление данных в таблицу leads
-        const leads = data.map((row) => [row.fio, row.phone, row.additional_info || null]);
         const [result] = await db.query(
-            "INSERT INTO leads (fio, phone, additional_info) VALUES ?",
+            "INSERT INTO leads (fio, phone, email, birthdate, operator, region) VALUES ?",
             [leads]
         );
 
@@ -87,6 +96,7 @@ app.post("/leads/upload", authenticateToken, verifyAdmin, upload.single("file"),
         res.status(500).json({ error: "Ошибка сервера" });
     }
 });
+
 
 // Получение списка лидов
 app.get("/leads", authenticateToken, verifyAdmin, async (req, res) => {
