@@ -1,13 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import api from "./utils/api";
 
 const LeadsTable = () => {
     const [leads, setLeads] = useState([]);
 
     useEffect(() => {
         const fetchLeads = async () => {
-            const { data } = await axios.get('hhttps://energo-onyx.onrender.com/api/leads');
-            setLeads(data);
+            try {
+                const { data } = await api.get("/leads");
+                setLeads(data);
+            } catch (err) {
+                console.error(err);
+                alert("Ошибка при загрузке данных");
+            }
         };
 
         fetchLeads();
@@ -30,10 +35,10 @@ const LeadsTable = () => {
                     {leads.map((lead) => (
                         <tr key={lead.id}>
                             <td>{lead.id}</td>
-                            <td>{lead.name}</td>
+                            <td>{lead.fio}</td>
                             <td>{lead.phone}</td>
                             <td>{lead.email}</td>
-                            <td>{lead.extraData ? JSON.stringify(JSON.parse(lead.extraData), null, 2) : '—'}</td>
+                            <td>{lead.extraData ? JSON.stringify(JSON.parse(lead.extraData), null, 2) : "—"}</td>
                         </tr>
                     ))}
                 </tbody>
