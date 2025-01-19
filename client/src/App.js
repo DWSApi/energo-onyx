@@ -20,6 +20,7 @@ import formgood from './formgood.jpg'
 import UploadLeads from "./UploadLeads";
 import AssignLeads from "./AssignLead";
 import MyLeads from "./MyLeads";
+import exitAccount from "./exitAccount.jpg"
 
 // Основной компонент приложения
 function App() {
