@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import api from "../services/api";
+import api from "./utils/api";
 
 const UploadLeads = () => {
     const [file, setFile] = useState(null);
