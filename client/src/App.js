@@ -17,6 +17,9 @@ import login1 from './login1.jpg'
 import login2 from './login2.jpg'
 import infoForm from './Info.jpg'
 import formgood from './formgood.jpg'
+import UploadLeads from "./components/UploadLeads";
+import AssignLeads from "./components/AssignLeads";
+import MyLeads from "./components/MyLeads";
 import exitAccount from './exitAccount.jpg'
 
 // Основной компонент приложения
@@ -38,6 +41,9 @@ function App() {
             <Route path="/apps" element={isAuthenticated && role === "2" ? <Apps /> : <Navigate to="/" />} />
             <Route path="/instruction" element={isAuthenticated && role === "2" ? <Instruction /> : <Navigate to="/" />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/upload" element={<UploadLeads />} />
+            <Route path="/assign" element={<AssignLeads />} />
+            <Route path="/my-leads" element={<MyLeads />} />
           </Routes>
         </div>
         <Footer />

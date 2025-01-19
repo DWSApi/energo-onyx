@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const mysql = require("mysql2");
 require("dotenv").config();
 const path = require("path");
+const multer = require("multer");
+const XLSX = require("xlsx");
 
 const app = express();
 const port = process.env.PORT || 10001;
@@ -58,6 +60,75 @@ const verifyAdmin = (req, res, next) => {
     }
     next();
 };
+
+// Конфигурация загрузки файлов
+const upload = multer({ dest: "uploads/" });
+
+// Загрузка лидов из Excel
+app.post("/leads/upload", authenticateToken, verifyAdmin, upload.single("file"), async (req, res) => {
+    try {
+        const file = req.file;
+        if (!file) return res.status(400).json({ error: "Файл не найден" });
+
+        const workbook = XLSX.readFile(file.path);
+        const sheetName = workbook.SheetNames[0];
+        const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+        // Добавление данных в таблицу leads
+        const leads = data.map((row) => [row.fio, row.phone, row.additional_info || null]);
+        const [result] = await db.query(
+            "INSERT INTO leads (fio, phone, additional_info) VALUES ?",
+            [leads]
+        );
+
+        res.status(201).json({ message: "Лиды успешно загружены", inserted: result.affectedRows });
+    } catch (err) {
+        console.error("Ошибка загрузки лидов:", err);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
+// Получение списка лидов
+app.get("/leads", authenticateToken, verifyAdmin, async (req, res) => {
+    try {
+        const [leads] = await db.query("SELECT * FROM leads");
+        res.status(200).json(leads);
+    } catch (err) {
+        console.error("Ошибка получения лидов:", err);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
+// Назначение лида пользователю
+app.post("/leads/assign", authenticateToken, verifyAdmin, async (req, res) => {
+    const { leadId, userId } = req.body;
+    try {
+        const [result] = await db.query(
+            "UPDATE leads SET assigned_to = ? WHERE id = ?",
+            [userId, leadId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Лид или пользователь не найден" });
+        }
+
+        res.status(200).json({ message: "Лид успешно назначен пользователю" });
+    } catch (err) {
+        console.error("Ошибка назначения лида:", err);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
+// Получение лидов для текущего пользователя
+app.get("/leads/my", authenticateToken, async (req, res) => {
+    try {
+        const [leads] = await db.query("SELECT * FROM leads WHERE assigned_to = ?", [req.user.id]);
+        res.status(200).json(leads);
+    } catch (err) {
+        console.error("Ошибка получения личных лидов:", err);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
 
 // Регистрация пользователя
 app.post("/register", async (req, res) => {
@@ -275,3 +346,4 @@ app.put("/admin/set-today", authenticateToken, verifyAdmin, async (req, res) => 
 app.listen(port, () => {
     console.log(`🚀 Сервер запущен на порту ${port}`);
 });
+
