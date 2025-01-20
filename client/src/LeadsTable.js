@@ -28,6 +28,7 @@ const LeadsTable = () => {
                         <th>ФИО</th>
                         <th>Телефон</th>
                         <th>Email</th>
+                        <th>Регион</th>
                         <th>Дополнительные данные</th>
                     </tr>
                 </thead>
@@ -37,8 +38,9 @@ const LeadsTable = () => {
                             <td>{lead.id}</td>
                             <td>{lead.fio}</td>
                             <td>{lead.phone}</td>
-                            <td>{lead.email}</td>
-                            <td>{lead.extraData ? JSON.stringify(JSON.parse(lead.extraData), null, 2) : "—"}</td>
+                            <td>{lead.email || "—"}</td>
+                            <td>{lead.region || "—"}</td>
+                            <td>{lead.birthdate || "—"}</td>
                         </tr>
                     ))}
                 </tbody>
