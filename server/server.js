@@ -140,6 +140,36 @@ app.get("/leads/my", authenticateToken, async (req, res) => {
     }
 });
 
+// Обновление статуса лида
+app.put("/leads/:id/status", authenticateToken, async (req, res) => {
+    try {
+        const leadId = req.params.id;
+        const { status } = req.body;
+
+        // Проверка валидности статуса
+        const validStatuses = ["Недозвон", "Слив", "Перезвон", "Взял"];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ error: "Неверный статус" });
+        }
+
+        // Обновление статуса в БД
+        const [result] = await db.query(
+            "UPDATE leads SET status = ? WHERE id = ? AND assigned_to = ?",
+            [status, leadId, req.user.id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Лид не найден или не принадлежит пользователю" });
+        }
+
+        res.status(200).json({ message: "Статус успешно обновлен" });
+    } catch (err) {
+        console.error("Ошибка обновления статуса лида:", err);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
+
 // Регистрация пользователя
 app.post("/register", async (req, res) => {
     const { name, email, password } = req.body;
