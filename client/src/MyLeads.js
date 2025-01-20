@@ -44,9 +44,14 @@ const MyLeads = () => {
                         <th>Статус</th>
                     </tr>
                 </thead>
-                <tbody style={{gap: '10px'}}>
+                <tbody>
                     {leads.map((lead, index) => (
-                        <tr key={index}>
+                        <tr style={{
+                            display: 'flex',
+                            gap: '20px',
+                            flexDirection: 'row'
+                            }} 
+                        key={index}>
                             {Object.values(lead).map((value, idx) => (
                                 <td key={idx}>{value || "—"}</td>
                             ))}
