@@ -21,6 +21,7 @@ import UploadLeads from "./UploadLeads";
 import AssignLeads from "./AssignLead";
 import MyLeads from "./MyLeads";
 import exitAccount from "./exitAccount.jpg"
+import LeadsTable from "./LeadsTable";
 
 // Основной компонент приложения
 function App() {
@@ -44,6 +45,7 @@ function App() {
             <Route path="/upload" element={<UploadLeads />} />
             <Route path="/assign" element={<AssignLeads />} />
             <Route path="/my-leads" element={<MyLeads />} />
+            <Route path="/leadstable" element={<LeadsTable />} />
           </Routes>
         </div>
         <Footer />
