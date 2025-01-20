@@ -24,27 +24,22 @@ const LeadsTable = () => {
             <table>
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>ФИО</th>
-                        <th>Телефон</th>
-                        <th>Email</th>
-                        <th>Регион</th>
-                        <th>Дополнительные данные</th>
+                        {Object.keys(leads[0] || {}).map((key) => (
+                            <th key={key}>{key}</th>
+                        ))}
                     </tr>
                 </thead>
                 <tbody>
-                    {leads.map((lead) => (
-                        <tr key={lead.id}>
-                            <td>{lead.id}</td>
-                            <td>{lead.fio}</td>
-                            <td>{lead.phone}</td>
-                            <td>{lead.email || "—"}</td>
-                            <td>{lead.region || "—"}</td>
-                            <td>{lead.birthdate || "—"}</td>
+                    {leads.map((lead, index) => (
+                        <tr key={index}>
+                            {Object.values(lead).map((value, idx) => (
+                                <td key={idx}>{value || "—"}</td>
+                            ))}
                         </tr>
                     ))}
                 </tbody>
             </table>
+
         </div>
     );
 };
