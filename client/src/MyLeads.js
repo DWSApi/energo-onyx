@@ -29,7 +29,7 @@ const LeadsTable = () => {
                         ))}
                     </tr>
                 </thead>
-                <tbody>
+                <tbody style={{gap: '10px' }}>
                     {leads.map((lead, index) => (
                         <tr key={index}>
                             {Object.values(lead).map((value, idx) => (
