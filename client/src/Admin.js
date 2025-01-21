@@ -7,9 +7,9 @@ import { useAuth } from "./AuthContext"; // Хук для получения р�
 const AdminPanel = () => {
     const [users, setUsers] = useState([]);
     const [error, setError] = useState("");
-    const [totalSubmissions, setTotalSubmissions] = useState(0);
     const navigate = useNavigate();
     const { role, isAuthenticated } = useAuth();
+    const { totalSubmissions, setTotalSubmissions } = useTotalSubmissions();
 
     const fetchUsers = async () => {
         const token = localStorage.getItem("token");
@@ -32,7 +32,7 @@ const AdminPanel = () => {
             // Считаем сумму всех отправок и обновляем пользователей
             const total = data.reduce((sum, user) => sum + user.count, 0);
             setUsers(data);
-            setTotalSubmissions(total);
+            setTotalSubmissions(total); // Обновляем значение в контексте
         } catch (error) {
             setError("Ошибка подключения к серверу.");
             console.error("Ошибка при загрузке пользователей:", error);
@@ -52,7 +52,7 @@ const AdminPanel = () => {
         try {
             const data = await deleteUser(id);
             if (data.success) {
-                fetchUsers();
+                fetchUsers(); // Перезагружаем данные после удаления
             } else {
                 setError(data.message || "Не удалось удалить пользователя.");
             }
@@ -67,7 +67,8 @@ const AdminPanel = () => {
             const data = await resetSubmissionsAPI();
             if (data.success) {
                 alert("Количество отправок успешно обнулено.");
-                fetchUsers();
+                setTotalSubmissions(0); // Обновляем контекст после сброса
+                fetchUsers(); // Перезагружаем пользователей
             } else {
                 setError(data.message || "Не удалось обнулить отправки.");
             }
@@ -82,7 +83,7 @@ const AdminPanel = () => {
             const data = await setTodayAPI();
             if (data.success) {
                 alert("Текущая дата успешно установлена.");
-                fetchUsers();
+                fetchUsers(); // Перезагружаем данные
             } else {
                 setError(data.message || "Не удалось установить дату.");
             }
@@ -98,7 +99,7 @@ const AdminPanel = () => {
             {error && <p className="error">{error}</p>}
             <h4>Добро пожаловать!</h4>
 
-            {/* Отображение суммы отправок всех пользователей */}
+            {/* Отображение суммы отправок всех пользователей из контекста */}
             <p>Общее количество отправок: <strong>{totalSubmissions}</strong></p>
 
             <div style={{ gap: "20px" }}>
