@@ -271,12 +271,12 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
         // Обновляем total_count в таблице, независимо от пользователя
         await db.query(
             `
-            INSERT INTO total_submissions (total_count)
-            VALUES (1)
+            INSERT INTO total_submissions (id, total_count)
+            VALUES (1, 1)
             ON DUPLICATE KEY UPDATE
                 total_count = total_count + 1
             `
-        );
+        );        
 
         if (result.affectedRows === 0) {
             return res.status(500).json({ error: "Ошибка при добавлении данных в базу" });
