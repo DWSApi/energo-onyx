@@ -7,21 +7,16 @@ const LeadsTable = () => {
     useEffect(() => {
         const fetchLeads = async () => {
             try {
-                const { data } = await api.get("/leads", {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`, // или другой способ хранения токена
-                    },
-                });
+                const { data } = await api.get("/leads");
                 setLeads(data);
             } catch (err) {
                 console.error(err);
                 alert("Ошибка при загрузке данных");
             }
         };
-        
+
         fetchLeads();
     }, []);
-
     return (
         <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
             <h2 style={{ textAlign: "center", color: "#333" }}>Leads</h2>
