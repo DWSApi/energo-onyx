@@ -679,7 +679,7 @@ function Apps() {
   }, []); // Поскольку navigate не используется, зависимость можно удалить
 
   const [formData, setFormData] = useState({
-    name: "",
+    accountName: "",
     fio: "",
     phone: "",
     message: "",
