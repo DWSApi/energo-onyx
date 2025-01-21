@@ -299,28 +299,27 @@ app.get("/account", authenticateToken, async (req, res) => {
 
     try {
         // Получаем данные пользователя из таблицы Holodka
-        const [userResult] = await db.query("SELECT id, name, email, isAdmin, count, data FROM Holodka WHERE id = ?", [req.user.id]);
+        const [result] = await db.query("SELECT id, name, email, isAdmin, count, data FROM Holodka WHERE id = ?", [req.user.id]);
 
-        if (userResult.length === 0) {
+        if (result.length === 0) {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
 
         // Получаем общий счетчик total_count из таблицы Holodka_Global
-        const [globalResult] = await db.query("SELECT total_count FROM Holodka_Global LIMIT 1");
+        const [globalResult] = await db.query("SELECT total_count FROM total_submissions LIMIT 1");
 
         if (globalResult.length === 0) {
             return res.status(404).json({ message: "Не удалось найти общий счетчик" });
         }
 
-        // Добавляем total_count в ответ
+        // Возвращаем данные пользователя и общий счетчик
         const response = {
-            ...userResult[0],
+            ...result[0],
             total_count: globalResult[0].total_count
         };
 
         res.json(response);
     } catch (err) {
-        console.error("Ошибка при получении данных:", err);
         res.status(500).json({ error: "Ошибка сервера" });
     }
 });
