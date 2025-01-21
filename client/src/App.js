@@ -272,7 +272,7 @@ function Instruction() {
   );
 }
 
-function Account({totalSubmissions}) {
+function Account() {
   const [account, setAccount] = useState(null);
   const [users, setUsers] = useState([]);
   const [totalSubmissions, setTotalSubmissions] = useState(0);
@@ -291,7 +291,7 @@ function Account({totalSubmissions}) {
           }
   
           // Проверка роли
-          if (role !== "1") {
+          if (role !== "5") {
               setError("У вас нет прав для доступа к этой странице.");
               navigate("/");
               return;
