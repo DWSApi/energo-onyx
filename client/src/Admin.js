@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getAllUsers, deleteUser, resetSubmissionsAPI, setTodayAPI } from "./utils/api";
 import { useNavigate } from "react-router-dom";
+import { useTotalSubmissions } from "./TotalSubmissionsContext";
 import { useAuth } from "./AuthContext"; // Хук для получения роли
 
 const AdminPanel = () => {

@@ -23,7 +23,7 @@ import AssignLeads from "./AssignLead";
 import MyLeads from "./MyLeads";
 import exitAccount from './exitAccount.jpg'
 import LeadsTable from "./LeadsTable";
-
+import { TotalSubmissionsProvider } from "./TotalSubmissionsContext";
 
 // Основной компонент приложения
 function App() {
@@ -46,6 +46,7 @@ function App() {
 
   return (
     <AuthProvider>
+      <TotalSubmissionsProvider>
       <Router>
         <div className="app">
           <Header />  {/* Хедер теперь использует данные из контекста */}
@@ -66,8 +67,9 @@ function App() {
             <Route path="/leads" element={<LeadsTable />} />
           </Routes>
         </div>
-        <Footer />
-      </Router>
+          <Footer />
+        </Router>
+        </TotalSubmissionsProvider>
     </AuthProvider>
   );
 }
@@ -274,42 +276,13 @@ function Instruction() {
 
 function Account() {
   const [account, setAccount] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [totalSubmissions, setTotalSubmissions] = useState(0);
   const [error, setError] = useState("");
   const [submissionCount, setSubmissionCount] = useState(0);
   const [lastSubmissionDate, setLastSubmissionDate] = useState("—");
   const navigate = useNavigate();
   const {role, isAuthenticated } = useAuth(); // Получаем статус аутентификации
-
-      const fetchUsers = async () => {
-          const token = localStorage.getItem("token");
-          if (!token) {
-              setError("Токен не найден");
-              navigate("/login");
-              return;
-          }
+  const { totalSubmissions } = useTotalSubmissions();
   
-          // Проверка роли
-          if (role !== "5") {
-              setError("У вас нет прав для доступа к этой странице.");
-              navigate("/");
-              return;
-          }
-  
-          try {
-              const data = await getAllUsers();
-  
-              // Считаем сумму всех отправок и обновляем пользователей
-              const total = data.reduce((sum, user) => sum + user.count, 0);
-              setUsers(data);
-              setTotalSubmissions(total);
-          } catch (error) {
-              setError("Ошибка подключения к серверу.");
-              console.error("Ошибка при загрузке пользователей:", error);
-          }
-      };
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
