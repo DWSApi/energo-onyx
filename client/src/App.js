@@ -45,7 +45,6 @@ function App() {
 
   return (
     <AuthProvider>
-      <TotalSubmissionsProvider>
       <Router>
         <div className="app">
           <Header />  {/* Хедер теперь использует данные из контекста */}
@@ -68,7 +67,6 @@ function App() {
         </div>
           <Footer />
         </Router>
-        </TotalSubmissionsProvider>
     </AuthProvider>
   );
 }
