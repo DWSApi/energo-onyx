@@ -44,10 +44,10 @@ function App() {
             <Route path="/instruction" element={<Instruction />} />
             <Route path="/account" element={<Account totalSubmissions={totalSubmissions}/>} />
             <Route path="/dopinfo" element={isAuthenticated && role === "5" ? <DopInfo /> : <Navigate to="/" />} />
-            <Route path="/upload" element= {<UploadLeads />} />
-            <Route path="/assign" element={<AssignLeads />} />
-            <Route path="/my-leads" element={<MyLeads />} />
-            <Route path="/leads" element={<LeadsTable />} />
+            <Route path="/upload" element= {isAuthenticated && role === "1" ? <UploadLeads /> : <Navigate to="/" />} />
+            <Route path="/assign" element={isAuthenticated && role === "1" ? <AssignLeads /> : <Navigate to="/" />} />
+            <Route path="/my-leads" element={isAuthenticated && role === "5" ? <MyLeads /> : <Navigate to="/" />} />
+            <Route path="/leads" element={isAuthenticated && role === "1" ? <LeadsTable /> : <Navigate to="/" />} />
           </Routes>
         </div>
           <Footer />
