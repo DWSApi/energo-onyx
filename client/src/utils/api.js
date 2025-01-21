@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Создание экземпляра axios для API
 const api = axios.create({
-    baseURL: process.env.REACT_APP_API_URL || "https://energo-onyx.onrender.com",
+    baseURL: process.env.REACT_APP_API_URL || "http://localhost:10000",
     headers: {
         "Content-Type": "application/json",
     },

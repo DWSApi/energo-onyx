@@ -4,8 +4,9 @@ import "./App.css";
 import Register from "./Register";
 import Login from "./Login";
 import AdminPanel from "./Admin";
+import AdminPanelminus from "./Adminminus";
 import DWSApi from "./adminapp"
-import { getAccountData } from './utils/api'; // Подключение правильного импорта
+import { getAccountData, getAllUsers } from './utils/api'; // Подключение правильного импорта
 import { AuthProvider, useAuth } from "./AuthContext"; // Подключаем контекст
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -20,12 +21,28 @@ import formgood from './formgood.jpg'
 import UploadLeads from "./UploadLeads";
 import AssignLeads from "./AssignLead";
 import MyLeads from "./MyLeads";
-import exitAccount from "./exitAccount.jpg"
+import exitAccount from './exitAccount.jpg'
 import LeadsTable from "./LeadsTable";
+
 
 // Основной компонент приложения
 function App() {
   const { role, isAuthenticated, userName } = useAuth();
+  const [totalSubmissions, setTotalSubmissions] = useState(0);
+
+  const fetchUsers = async () => {
+    try {
+      const data = await getAllUsers(); // Получаем пользователей
+      const total = data.reduce((sum, user) => sum + user.count, 0); // Считаем общее количество отправок
+      setTotalSubmissions(total); // Обновляем состояние с общим количеством отправок
+    } catch (error) {
+      console.error("Ошибка при получении данных:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers(); // Загружаем пользователей при монтировании компонента
+  }, []);
 
   return (
     <AuthProvider>
@@ -36,16 +53,17 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<Home />} />
-            <Route path="/admin" element={isAuthenticated && role === "1" ? <AdminPanel /> : <Navigate to="/" />} />
+            <Route path="/admin" element={isAuthenticated && role === "1" ? <AdminPanel setTotalSubmissions={setTotalSubmissions}/> : <Navigate to="/" />} />
+            <Route path="/adminminus" element={isAuthenticated && role === "2" ? <AdminPanelminus /> : <Navigate to="/" />} />
             <Route path="/services" element={<Services />} />
-            <Route path="/api" element={isAuthenticated && role === "2" ? <DWSApi /> : <Navigate to="/" />} />
-            <Route path="/apps" element={isAuthenticated && role === "2" ? <Apps /> : <Navigate to="/" />} />
-            <Route path="/instruction" element={isAuthenticated && role === "2" ? <Instruction /> : <Navigate to="/" />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/upload" element={<UploadLeads />} />
+            <Route path="/apps" element={isAuthenticated && role === "5" ? <Apps /> : <Navigate to="/" />} />
+            <Route path="/instruction" element={<Instruction />} />
+            <Route path="/account" element={<Account totalSubmissions={totalSubmissions}/>} />
+            <Route path="/dopinfo" element={isAuthenticated && role === "5" ? <DopInfo /> : <Navigate to="/" />} />
+            <Route path="/upload" element= {<UploadLeads />} />
             <Route path="/assign" element={<AssignLeads />} />
             <Route path="/my-leads" element={<MyLeads />} />
-            <Route path="/leadstable" element={<LeadsTable />} />
+            <Route path="/leads" element={<LeadsTable />} />
           </Routes>
         </div>
         <Footer />
@@ -115,24 +133,26 @@ const Header = () => {
           gap: "20px",
           alignItems: "center",
         }}>
-        {isAuthenticated && role === "1" ? (
+        {isAuthenticated && (role === "1" || role === "3") ? (
           <h3>Роскомнадзор</h3>
         ) : (
           <h3>Энергасбыт</h3>
         )}
-        {isAuthenticated && role === "1" ? (
-          <img src={RKN} style={{width: "40px"}} alt="Описание" />
+        {isAuthenticated && (role === "1" || role === "3") ? (
+          <img src={RKN} style={{ width: "40px" }} alt="Описание" />
         ) : (
-          <img src={myImage} style={{width: "60px"}} alt="Описание" />
+          <img src={myImage} style={{ width: "60px" }} alt="Описание" />
         )}
       </div>
       <nav>
         <Link to="/">Главная</Link>
         <Link to="/services">Сервисы</Link>
-        {isAuthenticated && role === "2" && <Link to="/instruction">Инструкция</Link>}
+        <Link to="/instruction">Инструкция</Link>
         <Link to="/account">Мой Аккаунт</Link>
-        {isAuthenticated && role === "2" && <Link to="/apps">Панель Пользователя</Link>}
+        {isAuthenticated && role === "5" && <Link to="/apps">Панель Пользователя</Link>}
+        {isAuthenticated && role === "2" && <Link to="/adminminus">Проверка передач</Link>}  {/* Проверка передач */}
         {isAuthenticated && role === "1" && <Link to="/admin">Админ Панель</Link>}  {/* Панель администратора */}
+        {isAuthenticated && role === "5" && <Link to="/dopinfo">Доп Информация</Link>}
         <button className="btn logout" style={{ color: "red" }} onClick={handleLogout}>Выйти</button>
       </nav>
     </header>
@@ -151,11 +171,11 @@ function Home() {
 
   return (
     <div className="home">
-        {isAuthenticated && role === "1" ? (
-          <h1>Привет в Роскомнадзоре</h1>
-        ) : (
-          <h1>Привет в Энергосбыте</h1>
-        )}
+      {isAuthenticated && role === "1" ? (
+        <h1>Привет в Роскомнадзоре</h1>
+      ) : (
+        <h1>Привет в Энергосбыте</h1>
+      )}
       <p>Your trusted partner in energy management and sustainable solutions.</p>
       <Link to="/services" className="btn">Explore Our Services</Link>
     </div>
@@ -185,48 +205,110 @@ function Services() {
 }
 
 function Instruction() {
+  const { role, isAuthenticated } = useAuth();  // Получаем данные из контекста
+
   const instruction = [
-    { title: "Как правильно входить", 
+    {
+      title: "Как правильно входить",
+      description: "В поле Login вводите почту mamita@gmail.com. В поле Password - вводите пароль который вам дали или который вы поменяли на свой!",
+      image1: login1,
+      image2: login2
+    },
+    {
+      title: "Что делать если выдаёт ошибку Аккаунта",
+      description: "У вас сверху есть Красная кнопка 'Выйти', нажимаете на неё, выходите и заного входите после этого должно быть всё нормально, если выдаёт ошибку или что-то другое пишете в ТГ группу!",
+      image1: exitAccount,
+    }
+  ];
+
+  const instructHol = [
+    {
+      title: "Как правильно входить",
       description: "В поле Login вводите почту holodka*@gmail.com. Вместо * вводите цыфру которую вам дали за вашим номером как на примере 2-го фото, вместо '45' должен быть ваш номер, в поле Password - вводите пароль который вам дали или который вы поменяли на свой!",
       image1: login1,
-      image2: login2 
+      image2: login2
     },
-    { title: "Что делать если выдаёт ошибку Аккаунта", 
+    {
+      title: "Что делать если выдаёт ошибку Аккаунта",
       description: "У вас сверху есть Красная кнопка 'Выйти', нажимаете на неё, выходите и заного входите после этого должно быть всё нормально, если выдаёт ошибку или что-то другое пишете в ТГ группу!",
       image1: exitAccount,
     },
-    { title: "Как правильно делать передачи", 
+    {
+      title: "Как правильно делать передачи",
       description: "У вас есть ваша Панель Пользователя. Нажимаете на 'Информация о клиенте' заполняете, НОМЕР ОБЕЗАТЕЛЬНО ВВОДИТЕ БЕЗ +, нажимаете отправить, если у вас вылазить окошко с текстом который ниже показан, всё нормально работаете дальше, если выдаёт ошибку или что-то другое пишете в ТГ группу!",
       image1: infoForm,
-      image2: formgood 
+      image2: formgood
     },
   ];
+
   return (
     <div className="services">
       <h2>Инструкции!</h2>
       <div className="service-cards">
-        {instruction.map((instructio, index) => (
-          <div key={index} className="card">
-            <h3>{instructio.title}</h3>
-            <img src={instructio.image1} alt={instructio.title} className="card-image" />
-            <h5>{instructio.description}</h5>
-            {instructio.image2 && (
-            <img src={instructio.image2} alt={instructio.title} className="card-image" />
-            )}
-          </div>
-        ))}
+
+        {isAuthenticated && (role === "5" || role === "1" || role === "2" || role === "3" || role === "4") ? (
+            instructHol.map((instructio, index) => (
+              <div key={index} className="card">
+                <h3>{instructio.title}</h3>
+                <img src={instructio.image1} alt={instructio.title} className="card-image" />
+                <h5>{instructio.description}</h5>
+                {instructio.image2 && (
+                  <img src={instructio.image2} alt={instructio.title} className="card-image" />
+                )}
+              </div>
+            ))
+        ) : (
+            instruction.map((instructio, index) => (
+              <div key={index} className="card">
+                <h3>{instructio.title}</h3>
+                <img src={instructio.image1} alt={instructio.title} className="card-image" />
+                <h5>{instructio.description}</h5>
+              </div>
+            ))
+        )}
+
       </div>
     </div>
   );
 }
 
-function Account() {
+function Account({totalSubmissions}) {
   const [account, setAccount] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [totalSubmissions, setTotalSubmissions] = useState(0);
   const [error, setError] = useState("");
   const [submissionCount, setSubmissionCount] = useState(0);
   const [lastSubmissionDate, setLastSubmissionDate] = useState("—");
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth(); // Получаем статус аутентификации
+  const {role, isAuthenticated } = useAuth(); // Получаем статус аутентификации
+
+      const fetchUsers = async () => {
+          const token = localStorage.getItem("token");
+          if (!token) {
+              setError("Токен не найден");
+              navigate("/login");
+              return;
+          }
+  
+          // Проверка роли
+          if (role !== "1") {
+              setError("У вас нет прав для доступа к этой странице.");
+              navigate("/");
+              return;
+          }
+  
+          try {
+              const data = await getAllUsers();
+  
+              // Считаем сумму всех отправок и обновляем пользователей
+              const total = data.reduce((sum, user) => sum + user.count, 0);
+              setUsers(data);
+              setTotalSubmissions(total);
+          } catch (error) {
+              setError("Ошибка подключения к серверу.");
+              console.error("Ошибка при загрузке пользователей:", error);
+          }
+      };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -281,10 +363,14 @@ function Account() {
 
   const getRoleName = (isAdmin) => {
     switch (isAdmin) {
-      case 2:
+      case 5:
         return "Холодка";
       case 1:
         return "Админ";
+        case 2:
+          return "Модератор";
+      case 3:
+        return "Госы";
       default:
         return "Пользователь";
     }
@@ -318,6 +404,7 @@ function Account() {
 
   return (
     <div className="account">
+      <p>Общее количество отправок: <strong>{totalSubmissions}</strong> из <strong>80</strong></p>
       <h2>Мой аккаунт</h2>
       <p>Имя: {account.name}</p>
       <p>Email: {account.email}</p>
@@ -342,6 +429,7 @@ function Footer() {
         <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">Twitter</a>
         <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       </nav>
+      <p>by from Kolomoisky</p>
     </footer>
   );
 }
@@ -405,7 +493,7 @@ function Apps() {
         return;
       }
 
-      if (role !== "2") { // Если роль не "1", то доступ закрыт
+      if (role !== "5") { // Если роль не "2", то доступ закрыт
         setError("У вас нет прав для доступа к этой странице.");
         navigate("/");
         return;
@@ -423,11 +511,20 @@ function Apps() {
   // Массив для модальных окон "ДАНЯ"
   const leftModalContent = [
     {
+      id: "modal0",
+      title: "Почему звоните через Whatsapp?",
+      content: (
+        <>
+          Я вас набираю через специальное приложение и как именно вас набирает уже решает приложение.
+        </>
+      )
+    },
+    {
       id: "modal1",
       title: "Была замена счетчика!",
       content: (
         <>
-          Ответ: идет плановая замена счетчика по постановлению Министерства Энергетики номер 554 — это обязательная процедура к выполнению.
+          Ответ: идет плановая замена счетчика по постановлению Министерства Энергетики Приказом ПАО "Россети" от 21.02.2024 № 77 утвержден стандарт организации "Приборы учета электроэнергии. Стандарт вводится в действие 01.07.2025.
           <br />
           <br />
           Второй ответ: Счетчик будет вам установлен МЕРКУРИЙ 230 с автоматической передачей данных в Энергосбыт.
@@ -510,11 +607,35 @@ function Apps() {
         </>
       )
     },
+    {
+      id: "modal10",
+      title: "У меня стоит умный счетчик который передает данные сам,мне его уже меняли",
+      content: (
+        <>
+          Ответ:  Система ваш номер выдала это означает что данные к нам передаются не корректно в таком случае давайте подберем дату и время чтобы мастер приехал и провел диагностику вашего счетчика,это бесплатно
+        </>
+      )
+    },
+    {
+      id: "modal11",
+      title: "Я сам схожу  в Энергосбыт сам куплю счетчик!!!",
+      content: (
+        <>
+
+
+          Ответ:  Вам нужно самостоятельно будет покупать счетчик который марки Меркурий 230 БМ-01 по сколько это соотечественный производитель и не подлежит санкциям заказывать с интернета либо искать в соответсвующих магазинах именно этот который не подвергается санкциям, в данный момент его не присутствует в наличии магазинах , только на складах Энергосбыта поскольку была оптовая закупка, исходя из постановления 554, меняют не только вам а всем на территории России, данная процедура в обязательном порядке. Не важно сами вы это будете делать либо же за счет государства но Если вы не успеете заменить до определенного времени к сожалению вас могут отключить от энергоснабжения  потом так как отказываетесь в данный момент на безоплатное подключение за счет государства вам приодеться  искать мастера назначать день время самостоятельно, тратить своё время оплачивать замену и установку счетчика к этому всему нужно найти где-то именно этот счетчик и приобрести его так же за свой счет.
+          <br />
+          (Я смотрел его нету в Интернете)
+          <br />
+          Ответ: Конечно, была оптовая закупка исходя из постановления, из-за этого их сейчас в магазинах нет в наличии.
+        </>
+      )
+    },
   ];
   // Массив для модальных окон "ПОСЛЕ МУСОРОВ ДЕБЕТ"
   const rightModalContent = [
     {
-      id: "modal10",
+      id: "modal15",
       title: "Зачем я буду говорить вам документ",
       content: (
         <>
@@ -523,7 +644,7 @@ function Apps() {
       )
     },
     {
-      id: "modal11",
+      id: "modal16",
       title: "Почему я должен называть документы по телефону!?",
       content: (
         <>
@@ -532,7 +653,7 @@ function Apps() {
       )
     },
     {
-      id: "modal12",
+      id: "modal17",
       title: "У вас есть мои данные я не могу вам ничего давать",
       content: (
         <>
@@ -541,7 +662,7 @@ function Apps() {
       )
     },
     {
-      id: "modal13",
+      id: "modal18",
       title: "Как я могу удостовериться что вы с Энергосбыта",
       content: (
         <>
@@ -550,7 +671,7 @@ function Apps() {
       )
     },
     {
-      id: "modal14",
+      id: "modal19",
       title: "Я не буду называть персональные данные по телефону",
       content: (
         <>
@@ -559,7 +680,7 @@ function Apps() {
       )
     },
     {
-      id: "modal15",
+      id: "modal20",
       title: "По какому Адресу Звоните/Будете менять Счётчик?",
       content: (
         <>
@@ -608,46 +729,41 @@ function Apps() {
     dataroz: "",
     region: "",
     document: "",
-    purchaseType: "",
+    nameBaza: "",
   });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const [isDisabled, setIsDisabled] = useState(false);
-
-  const handleClick = () => {
-    setIsDisabled(true);
-    setTimeout(() => setIsDisabled(false), 5000); // 5 секунд
-  };
+  const [isDisabled, setIsDisabled] = useState(false)
 
   // Обработчик отправки формы
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsDisabled(true);
-    const { fio, phone, dataroz, region, document, message, purchaseType } = formData;
-
-    if (!fio || !phone || !dataroz || !region || !message || !purchaseType || !document) {
+  
+    const { fio, phone, dataroz, region, document, message, nameBaza } = formData;
+  
+    if (!fio || !phone || !dataroz || !region || !message || !nameBaza || !document) {
       alert("Пожалуйста, заполните все обязательные поля.");
       return;
     }
-
+  
     if (!account || !account.name) {
       alert("Ошибка: Данные пользователя не загружены.");
       return;
     }
-
+  
     // Уникальный ID пользователя (например, account.id или другой уникальный идентификатор)
     const userId = account.id || "defaultUserId";  // Замените на ваш уникальный идентификатор
     const submissionCountKey = `${userId}_submissionCount`;
     const submissionDateKey = `${userId}_submissionDate`;
-
+  
     // Работа со счётчиком
     const currentDate = new Date().toISOString().split("T")[0]; // Только дата (YYYY-MM-DD)
     const storedDate = localStorage.getItem(submissionDateKey) || ""; // Дата последней отправки
     let submissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0; // Счётчик отправок
-
+  
     // Сброс счётчика, если день изменился
     if (storedDate !== currentDate) {
       localStorage.setItem(submissionDateKey, currentDate); // Обновляем дату
@@ -658,9 +774,12 @@ function Apps() {
       submissionCount += 1;
       localStorage.setItem(submissionCountKey, submissionCount.toString());
     }
-
+  
     console.log(`Счётчик отправок: ${submissionCount}, Дата: ${currentDate}`);
 
+    setIsDisabled(true);
+    setLoading(true);
+  
     const data = {
       fio,
       phone,
@@ -668,20 +787,37 @@ function Apps() {
       region,
       document,
       message,
-      purchaseType,
+      nameBaza,
       accountName: account.name,
     };
-
+  
     setLoading(true);
-
-    fetch("https://script.google.com/macros/s/AKfycbzc6Q7xeEIdzLOug07p_Cik8xQdX5bGgUh1-y8UYWMZ5o4kOfd27x7o2NvFMngdkWapZA/exec", {
+  
+    // Сначала отправляем данные в БД
+    fetch("https://dws-energy.onrender.com/submit-form", {
       method: "POST",
-      body: new URLSearchParams(data),
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
+      body: JSON.stringify(data),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Ошибка при логировании данных на сервере");
+        }
+        return response.json();
+      })
+      .then(() => {
+        // После успешной отправки в БД, отправляем в Google Script
+        return fetch("https://script.google.com/macros/s/AKfycbyh9ohN0yvmxJchuM1Y9mI0zGjhLLTTtIm1eR2RnbUMC6wNT3fOPt2WSdNdH8wCK8AFhA/exec", {
+          method: "POST",
+          body: new URLSearchParams(data),
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        });
+      })
       .then(() => {
         alert(`Спасибо! Ваша информация успешно отправлена. Отправок за сегодня: ${submissionCount}`);
         // Очищаем форму только после успешной отправки
@@ -692,7 +828,7 @@ function Apps() {
           dataroz: "",
           region: "",
           document: "",
-          purchaseType: "",
+          nameBaza: "",
         });
       })
       .catch((error) => {
@@ -702,19 +838,9 @@ function Apps() {
       .finally(() => {
         setLoading(false);
         setIsDisabled(false);
+        setLoading(false);
       });
-
-    fetch("https://energo-onyx.onrender.com/submit-form", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(data),
-    }).catch((error) => {
-      console.error("Ошибка при логировании данных на сервере:", error);
-    });
-  };
+  };  
 
   return (
     <main>
@@ -815,19 +941,17 @@ function Apps() {
                       required
                       style={{ padding: '10px', marginBottom: '10px', fontSize: '16px', border: '1px solid #ccc', borderRadius: '5px', height: '100px' }}
                     />
-                    <select
-                      name="purchaseType"
-                      value={formData.purchaseType}
+                    <input
+                      type="text"
+                      name="nameBaza"
+                      value={formData.nameBaza}
                       onChange={handleChange}
+                      placeholder="Имя Базы"
                       required
                       style={{ padding: '10px', marginBottom: '10px', fontSize: '16px', border: '1px solid #ccc', borderRadius: '5px' }}
-                    >
-                      <option value="">Выберите тип телефонии</option>
-                      <option value="Whatsapp">Whatsapp</option>
-                      <option value="Microsip">Microsip</option>
-                    </select>
+                    />
 
-                    <button 
+                    <button
                       type="submit"
                       style={{
                         padding: '10px 20px',
@@ -839,10 +963,11 @@ function Apps() {
                         cursor: isDisabled ? 'not-allowed' : 'pointer',
                         transition: 'background-color 0.3s'
                       }}
-                    disabled={isDisabled}
+                      disabled={isDisabled}
                     >
-                      {isDisabled ? "Подождите..." : "Отправить"}
+                      {isDisabled ? "ПОДОЖДИ НЕ ДРОЧИ ТЫ ЭТУ КНОПКУ" : "Отправить"}
                     </button>
+
                   </form>
                 }
               />
@@ -942,7 +1067,42 @@ function Apps() {
   );
 }
 
-
+// Страница с услугами
+function DopInfo() {
+  const services = [
+    { title: "Адреса Энергосбыта", description: (
+      <>
+        1. Москва
+        <br></br>
+        2. СБП
+        <br></br>
+        3. Белгород
+      </>
+    )},
+    { title: "Адреса Энергосбыта", description: (
+      <>
+        1. Москва
+        <br></br>
+        2. СБП
+        <br></br>
+        3. Белгород
+      </>
+    )},
+  ];
+  return (
+    <div className="services">
+      <h2>Доп Информация</h2>
+      <div className="service-cards">
+        {services.map((service, index) => (
+          <div key={index} className="card">
+            <h3>{service.title}</h3>
+            <p>{service.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 
 
