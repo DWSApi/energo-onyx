@@ -6,7 +6,7 @@ import Login from "./Login";
 import AdminPanel from "./Admin";
 import AdminPanelminus from "./Adminminus";
 import DWSApi from "./adminapp"
-import { getAccountData, getAllUsers } from './utils/api'; // Подключение правильного импорта
+import { getAccountData } from './utils/api'; // Подключение правильного импорта
 import { AuthProvider, useAuth } from "./AuthContext"; // Подключаем контекст
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -28,20 +28,6 @@ import LeadsTable from "./LeadsTable";
 function App() {
   const { role, isAuthenticated, userName } = useAuth();
   const [totalSubmissions, setTotalSubmissions] = useState(0);
-
-  const fetchUsers = async () => {
-    try {
-      const data = await getAllUsers(); // Получаем пользователей
-      const total = data.reduce((sum, user) => sum + user.count, 0); // Считаем общее количество отправок
-      setTotalSubmissions(total); // Обновляем состояние с общим количеством отправок
-    } catch (error) {
-      console.error("Ошибка при получении данных:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers(); // Загружаем пользователей при монтировании компонента
-  }, []);
 
   return (
     <AuthProvider>
@@ -274,7 +260,6 @@ function Instruction() {
 function Account() {
   const [account, setAccount] = useState(null);
   const [error, setError] = useState("");
-  
   const [submissionCount, setSubmissionCount] = useState(0);
   const [lastSubmissionDate, setLastSubmissionDate] = useState("—");
   const [totalSubmissions, setTotalSubmissions] = useState(0); // Новое состояние для общего количества
