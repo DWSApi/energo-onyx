@@ -130,6 +130,18 @@ export const setTodayAPI = async () => {
     }
 };
 
-
+export const getTotalSubmissions = async () => {
+    const response = await fetch("/api/totalSubmissions", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+    });
+    if (!response.ok) {
+        throw new Error("Ошибка при получении общего количества отправок");
+    }
+    return response.json();
+};
 
 export default api;
