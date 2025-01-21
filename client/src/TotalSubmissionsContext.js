@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getTotalSubmissions } from "./utils/api"; // Функция API
+import { getTotalSubmissions } from "./utils/api";
 
 const TotalSubmissionsContext = createContext();
 

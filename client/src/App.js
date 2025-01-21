@@ -23,7 +23,7 @@ import AssignLeads from "./AssignLead";
 import MyLeads from "./MyLeads";
 import exitAccount from './exitAccount.jpg'
 import LeadsTable from "./LeadsTable";
-import { TotalSubmissionsProvider } from "./TotalSubmissionsContext";
+import { TotalSubmissionsProvider, useTotalSubmissions } from "./TotalSubmissionsContext";
 
 // Основной компонент приложения
 function App() {
