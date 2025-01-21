@@ -5,11 +5,13 @@ const mysql = require("mysql2");
 require("dotenv").config();
 const path = require("path");
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" }); // Или используйте другую настройку для хранения
 const XLSX = require("xlsx");
 
 const app = express();
 const port = process.env.PORT || 10001;
+
+app.use(cors({ origin: "*" }));
+app.use(express.json());
 
 // Логируем переменные окружения для отладки
 console.log("DB_HOST:", process.env.DB_HOST);
@@ -18,8 +20,8 @@ console.log("DB_PASSWORD:", process.env.DB_PASSWORD);
 console.log("DB_NAME:", process.env.DB_NAME);
 console.log("DB_PORT:", process.env.DB_PORT);
 
-app.use(cors({ origin: "*" }));
-app.use(express.json());
+console.log(process.env);
+
 
 // Создаем пул соединений
 const pool = mysql.createPool({
@@ -53,17 +55,120 @@ const authenticateToken = (req, res, next) => {
 
 // Middleware для проверки админских прав
 const verifyAdmin = (req, res, next) => {
-    // Проверяем, что req.user существует и что isAdmin правильно установлен
-    if (!req.user || (req.user.isAdmin !== 1 && req.user.isAdmin !== 2)) {
-        console.log('Доступ отказан: Пользователь не является администратором');
+    if (req.user.isAdmin !== 1) {
         return res.status(403).json({ error: "Нет прав администратора" });
     }
-
-    // Логирование для отладки
-    console.log(`Пользователь ${req.user.id} имеет права администратора: ${req.user.isAdmin}`);
-
     next();
 };
+
+// Конфигурация загрузки файлов
+const upload = multer({ dest: "uploads/" });
+
+// Загрузка лидов из Excel
+app.post("/leads/upload", authenticateToken, verifyAdmin, upload.single("file"), async (req, res) => {
+    try {
+        const file = req.file;
+        if (!file) return res.status(400).json({ error: "Файл не найден" });
+
+        const workbook = XLSX.readFile(file.path);
+        const sheetName = workbook.SheetNames[0];
+        const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+        // Обработка данных с учетом новых колонок
+        const leads = data.map((row) => [
+            row["ФИО"], // fio
+            row["Номер"], // phone
+            row["Почта"] || null, // email
+            row["Дата рождения (MM/DD/YYYY)"] || null, // birthdate
+            row["Оператор"] || null, // operator
+            row["Регион"] || null, // region
+        ]);
+
+        // Добавление данных в таблицу leads
+        const [result] = await db.query(
+            "INSERT INTO leads (fio, phone, email, birthdate, operator, region) VALUES ?",
+            [leads]
+        );
+
+        res.status(201).json({ message: "Лиды успешно загружены", inserted: result.affectedRows });
+    } catch (err) {
+        console.error("Ошибка загрузки лидов:", err);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
+
+// Получение списка лидов
+app.get("/leads", authenticateToken, verifyAdmin, async (req, res) => {
+    try {
+        const [leads] = await db.query("SELECT * FROM leads");
+        res.status(200).json(leads);
+    } catch (err) {
+        console.error("Ошибка получения лидов:", err);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
+// Назначение лида пользователю
+app.post("/leads/assign", authenticateToken, verifyAdmin, async (req, res) => {
+    const { leadId, userId } = req.body;
+    try {
+        const [result] = await db.query(
+            "UPDATE leads SET assigned_to = ? WHERE id = ?",
+            [userId, leadId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Лид или пользователь не найден" });
+        }
+
+        res.status(200).json({ message: "Лид успешно назначен пользователю" });
+    } catch (err) {
+        console.error("Ошибка назначения лида:", err);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
+// Получение лидов для текущего пользователя
+app.get("/leads/my", authenticateToken, async (req, res) => {
+    try {
+        const [leads] = await db.query("SELECT * FROM leads WHERE assigned_to = ?", [req.user.id]);
+        res.status(200).json(leads);
+    } catch (err) {
+        console.error("Ошибка получения личных лидов:", err);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
+// Обновление статуса лида
+app.put("/leads/:id/status", authenticateToken, async (req, res) => {
+    try {
+        const leadId = req.params.id;
+        const { status } = req.body;
+
+        // Проверка валидности статуса
+        const validStatuses = ["Недозвон", "Слив", "Перезвон", "Взял"];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ error: "Неверный статус" });
+        }
+
+        // Обновление статуса в БД
+        const [result] = await db.query(
+            "UPDATE leads SET status = ? WHERE id = ? AND assigned_to = ?",
+            [status, leadId, req.user.id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Лид не найден или не принадлежит пользователю" });
+        }
+
+        res.status(200).json({ message: "Статус успешно обновлен" });
+    } catch (err) {
+        console.error("Ошибка обновления статуса лида:", err);
+        res.status(500).json({ error: "Ошибка сервера" });
+    }
+});
+
 
 // Регистрация пользователя
 app.post("/register", async (req, res) => {
@@ -177,6 +282,8 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
 });
 
 
+
+
 // Получение информации о пользователе
 app.get("/account", authenticateToken, async (req, res) => {
     console.log("✅ Декодированный токен:", req.user);
@@ -255,7 +362,6 @@ app.put("/admin/reset-submissions", authenticateToken, verifyAdmin, async (req, 
     try {
         await db.query("UPDATE Holodka SET count = 0");
         res.status(200).json({ message: "Количество отправок обнулено для всех пользователей." });
-        console.log("✅ Количество отправок обнулено для всех пользователей.");
     } catch (err) {
         console.error("Ошибка при обнулении отправок:", err);
         res.status(500).json({ error: "Ошибка сервера при обнулении отправок" });
@@ -269,98 +375,15 @@ app.put("/admin/set-today", authenticateToken, verifyAdmin, async (req, res) => 
     try {
         await db.query("UPDATE Holodka SET data = ?", [today]);
         res.status(200).json({ message: "Текущая дата установлена для всех пользователей." });
-        console.log("✅ Текущая дата установлена для всех пользователей.");
     } catch (err) {
         console.error("Ошибка при установке даты:", err);
         res.status(500).json({ error: "Ошибка сервера при установке даты" });
     }
 });
 
-app.post("/leads/upload", authenticateToken, verifyAdmin, upload.single("file"), async (req, res) => {
-    try {
-        const file = req.file;
-        if (!file) return res.status(400).json({ error: "Файл не найден" });
-
-        const workbook = XLSX.readFile(file.path);
-        const sheetName = workbook.SheetNames[0];
-        const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-        // Проверяем, какие столбцы есть в файле
-        const leads = data.map((row) => [
-            row["ФИО"] || null, // fio
-            row["Номер"] || null, // phone
-            row["Почта"] || null, // email
-            row["Дата рождения (MM/DD/YYYY)"] || null, // birthdate
-            row["Оператор"] || null, // operator
-            row["Регион"] || null, // region
-        ]);
-
-        // Удаляем пустые строки (если нет ФИО и номера, строка считается пустой)
-        const filteredLeads = leads.filter((lead) => lead[0] || lead[1]);
-
-        if (filteredLeads.length === 0) {
-            return res.status(400).json({ error: "Файл не содержит данных для загрузки." });
-        }
-
-        // Добавление данных в таблицу leads
-        const [result] = await db.query(
-            "INSERT INTO leads (fio, phone, email, birthdate, operator, region) VALUES ?",
-            [filteredLeads]
-        );
-
-        res.status(201).json({ message: "Лиды успешно загружены", inserted: result.affectedRows });
-    } catch (err) {
-        console.error("Ошибка загрузки лидов:", err);
-        res.status(500).json({ error: "Ошибка сервера" });
-    }
-});
-
-// Получение списка лидов
-app.get("/leads", authenticateToken, verifyAdmin, async (req, res) => {
-    try {
-        const [leads] = await db.query("SELECT * FROM leads");
-        res.status(200).json(leads);
-    } catch (err) {
-        console.error("Ошибка получения лидов:", err);
-        res.status(500).json({ error: "Ошибка сервера" });
-    }
-});
-
-// Назначение лида пользователю
-app.post("/leads/assign", authenticateToken, verifyAdmin, async (req, res) => {
-    const { leadId, userId } = req.body;
-    try {
-        const [result] = await db.query(
-            "UPDATE leads SET assigned_to = ? WHERE id = ?",
-            [userId, leadId]
-        );
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: "Лид или пользователь не найден" });
-        }
-
-        res.status(200).json({ message: "Лид успешно назначен пользователю" });
-    } catch (err) {
-        console.error("Ошибка назначения лида:", err);
-        res.status(500).json({ error: "Ошибка сервера" });
-    }
-});
-
-// Получение лидов для текущего пользователя
-app.get("/leads/my", authenticateToken, async (req, res) => {
-    try {
-        const [leads] = await db.query("SELECT * FROM leads WHERE assigned_to = ?", [req.user.id]);
-        res.status(200).json(leads);
-    } catch (err) {
-        console.error("Ошибка получения личных лидов:", err);
-        res.status(500).json({ error: "Ошибка сервера" });
-    }
-});
-
-
-
 
 // Запуск сервера
 app.listen(port, () => {
     console.log(`🚀 Сервер запущен на порту ${port}`);
 });
+
