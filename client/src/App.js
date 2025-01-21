@@ -23,7 +23,6 @@ import AssignLeads from "./AssignLead";
 import MyLeads from "./MyLeads";
 import exitAccount from './exitAccount.jpg'
 import LeadsTable from "./LeadsTable";
-import { TotalSubmissionsProvider, useTotalSubmissions } from "./TotalSubmissionsContext";
 
 // Основной компонент приложения
 function App() {
@@ -277,11 +276,12 @@ function Instruction() {
 function Account() {
   const [account, setAccount] = useState(null);
   const [error, setError] = useState("");
+  
   const [submissionCount, setSubmissionCount] = useState(0);
   const [lastSubmissionDate, setLastSubmissionDate] = useState("—");
+  const [totalSubmissions, setTotalSubmissions] = useState(0); // Новое состояние для общего количества
   const navigate = useNavigate();
-  const {role, isAuthenticated } = useAuth(); // Получаем статус аутентификации
-  const { totalSubmissions } = useTotalSubmissions();
+  const { role, isAuthenticated } = useAuth(); // Получаем статус аутентификации
   
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -296,6 +296,9 @@ function Account() {
         });
         const data = response.data;
         setAccount(data);
+
+        // Обновляем общее количество отправок
+        setTotalSubmissions(data.total_count || 0); // Устанавливаем значение total_count
 
         // Обновление данных счётчика
         const userId = data.id || "defaultUserId";
@@ -340,8 +343,8 @@ function Account() {
         return "Холодка";
       case 1:
         return "Админ";
-        case 2:
-          return "Модератор";
+      case 2:
+        return "Модератор";
       case 3:
         return "Госы";
       default:
@@ -388,8 +391,6 @@ function Account() {
     </div>
   );
 }
-
-
 
 
 // Компонент Footer
