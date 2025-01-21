@@ -268,6 +268,16 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
             [userId, currentDate, currentDate, currentDate]
         );
 
+        // Обновляем total_count в таблице, независимо от пользователя
+        await db.query(
+            `
+            INSERT INTO total_submissions (total_count)
+            VALUES (1)
+            ON DUPLICATE KEY UPDATE
+                total_count = total_count + 1
+            `
+        );
+
         if (result.affectedRows === 0) {
             return res.status(500).json({ error: "Ошибка при добавлении данных в базу" });
         }
@@ -283,23 +293,38 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
 
 
 
-
 // Получение информации о пользователе
 app.get("/account", authenticateToken, async (req, res) => {
     console.log("✅ Декодированный токен:", req.user);
 
     try {
-        const [result] = await db.query("SELECT id, name, email, isAdmin, count, data FROM Holodka WHERE id = ?", [req.user.id]);
+        // Получаем данные пользователя из таблицы Holodka
+        const [userResult] = await db.query("SELECT id, name, email, isAdmin, count, data FROM Holodka WHERE id = ?", [req.user.id]);
 
-        if (result.length === 0) {
+        if (userResult.length === 0) {
             return res.status(404).json({ message: "Пользователь не найден" });
         }
 
-        res.json(result[0]);
+        // Получаем общий счетчик total_count из таблицы Holodka_Global
+        const [globalResult] = await db.query("SELECT total_count FROM Holodka_Global LIMIT 1");
+
+        if (globalResult.length === 0) {
+            return res.status(404).json({ message: "Не удалось найти общий счетчик" });
+        }
+
+        // Добавляем total_count в ответ
+        const response = {
+            ...userResult[0],
+            total_count: globalResult[0].total_count
+        };
+
+        res.json(response);
     } catch (err) {
+        console.error("Ошибка при получении данных:", err);
         res.status(500).json({ error: "Ошибка сервера" });
     }
 });
+
 
 // Получение списка пользователей (только админы)
 app.get("/admin/users", authenticateToken, verifyAdmin, async (req, res) => {
