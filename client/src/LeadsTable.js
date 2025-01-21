@@ -7,14 +7,18 @@ const LeadsTable = () => {
     useEffect(() => {
         const fetchLeads = async () => {
             try {
-                const { data } = await api.get("/leads");
+                const { data } = await api.get("/leads", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`, // или другой способ хранения токена
+                    },
+                });
                 setLeads(data);
             } catch (err) {
                 console.error(err);
                 alert("Ошибка при загрузке данных");
             }
         };
-
+        
         fetchLeads();
     }, []);
 
