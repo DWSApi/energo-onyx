@@ -92,7 +92,6 @@ export const deleteUser = async (id) => {
 };
 
 // utils/api.js
-
 export const updateUser = async (userId, userData, token) => {
     const response = await fetch(`${process.env.REACT_APP_API_URL}/users/${userId}`, {
         method: "PUT",

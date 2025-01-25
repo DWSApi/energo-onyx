@@ -6,6 +6,7 @@ require("dotenv").config();
 const path = require("path");
 const multer = require("multer");
 const XLSX = require("xlsx");
+const { use } = require("react");
 
 const app = express();
 const port = process.env.PORT || 10001;
@@ -55,7 +56,7 @@ const authenticateToken = (req, res, next) => {
 
 // Middleware для проверки админских прав
 const verifyAdmin = (req, res, next) => {
-    if (req.user.isAdmin !== 1) {
+    if ((req.user.isAdmin !== 1 && req.user.isAdmin !== 2)) {
         return res.status(403).json({ error: "Нет прав администратора" });
     }
     next();
@@ -233,7 +234,7 @@ app.post("/login", async (req, res) => {
 
 
 app.post("/submit-form", authenticateToken, async (req, res) => {
-    const { fio, phone, dataroz, region, document, message, purchaseType, accountName } = req.body;
+    const { fio, phone, dataroz, region, document, message, nameBaza, accountName } = req.body;
 
     // Логирование данных
     console.log("📋 Получена анкета:");
@@ -243,7 +244,7 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     console.log("Регион:", region);
     console.log("Документ:", document);
     console.log("Сообщение:", message);
-    console.log("Тип покупки:", purchaseType);
+    console.log("База:", nameBaza);
     console.log("Имя пользователя из аккаунта:", accountName);
 
     // Получаем текущую дату
@@ -255,6 +256,7 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
     try {
         // Обновляем или добавляем данные в таблицу Holodka для конкретного пользователя
         const [result] = await db.query(
+            
             `
             INSERT INTO Holodka (id, count, data)
             VALUES (?, 1, ?)
@@ -264,25 +266,39 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
                     ELSE 1
                 END,
                 data = ?
-            `,
+                `
+            ,
             [userId, currentDate, currentDate, currentDate]
+        );
+
+        // Сохраняем данные в новую таблицу (например, new_table)
+        const [newTableResult] = await db.query(
+            
+            `
+            INSERT INTO leads (user_id, fio, phone, dataroz, region, document, message, nameBaza, submission_date, assigned_to, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL)
+            `
+            ,
+            [userId, fio, phone, dataroz, region, document, message, nameBaza, currentDate]
         );
 
         // Обновляем total_count в таблице, независимо от пользователя
         await db.query(
-            `
-            INSERT INTO total_submissions (id, total_count)
+            
+            
+            `INSERT INTO total_submissions (id, total_count)
             VALUES (1, 1)
             ON DUPLICATE KEY UPDATE
                 total_count = total_count + 1
             `
-        );        
 
-        if (result.affectedRows === 0) {
+        );
+
+        if (result.affectedRows === 0 || newTableResult.affectedRows === 0) {
             return res.status(500).json({ error: "Ошибка при добавлении данных в базу" });
         }
 
-        console.log("✅ Данные успешно добавлены в базу данных");
+        console.log("✅ Данные успешно добавлены в базу данных и в новую таблицу");
 
         res.status(200).json({ message: "Данные анкеты успешно залогированы" });
     } catch (err) {
@@ -290,7 +306,6 @@ app.post("/submit-form", authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Ошибка сервера при логировании анкеты" });
     }
 });
-
 
 
 // Получение информации о пользователе
@@ -410,4 +425,3 @@ app.put("/admin/set-today", authenticateToken, verifyAdmin, async (req, res) => 
 app.listen(port, () => {
     console.log(`🚀 Сервер запущен на порту ${port}`);
 });
-
