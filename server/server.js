@@ -7,6 +7,7 @@ const path = require("path");
 const multer = require("multer");
 const XLSX = require("xlsx");
 const { use } = require("react");
+import io from "socket.io-client";
 
 const app = express();
 const port = process.env.PORT || 10001;
@@ -419,6 +420,8 @@ app.put("/admin/set-today", authenticateToken, verifyAdmin, async (req, res) => 
         res.status(500).json({ error: "Ошибка сервера при установке даты" });
     }
 });
+
+io.emit("updateTotalSubmissions", newTotalCount);
 
 
 // Запуск сервера
