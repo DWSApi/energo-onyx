@@ -7,6 +7,8 @@ const path = require("path");
 const multer = require("multer");
 const XLSX = require("xlsx");
 const { use } = require("react");
+const http = require("http");
+const { Server } = require("socket.io");
 
 const app = express();
 const port = process.env.PORT || 10001;
@@ -420,7 +422,28 @@ app.put("/admin/set-today", authenticateToken, verifyAdmin, async (req, res) => 
     }
 });
 
-io.emit("updateTotalSubmissions", newTotalCount);
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+    },
+});
+
+io.on("connection", (socket) => {
+    console.log("Новое подключение WebSocket");
+
+    socket.on("disconnect", () => {
+        console.log("Пользователь отключился");
+    });
+});
+
+// Используем io.emit для обновления счетчика
+function updateTotalSubmissions(newTotalCount) {
+    io.emit("updateTotalSubmissions", newTotalCount);
+}
+
+// Заменяем вызов io.emit в вашем коде
+updateTotalSubmissions(newTotalCount);
 
 
 // Запуск сервера
