@@ -23,9 +23,7 @@ import MyLeads from "./MyLeads";
 import exitAccount from './exitAccount.jpg'
 import LeadsTable from "./LeadsTable";
 import "./Marquee.css";
-import { io } from "socket.io-client";
 
-const socket = io(process.env.REACT_APP_API_URL); // Создаем соединение с сервером
 
 // Основной компонент приложения
 function App() {
@@ -853,33 +851,31 @@ function Apps() {
   };
 
 
-  const [totalSubmissions, setTotalSubmissions] = useState(0);
+  const [totalSubmissions, setTotalSubmissions] = useState(0); // Новое состояние для общего количества
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      return;
+    }
 
     const fetchAccountData = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/account`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setTotalSubmissions(response.data.total_count || 0);
+        const data = response.data;
+        setAccount(data);
+
+        // Обновляем общее количество отправок
+        setTotalSubmissions(data.total_count || 0); // Устанавливаем значение total_count
       } catch (err) {
         console.error("Ошибка при получении данных аккаунта:", err);
+        setError("Ошибка при загрузке данных.");
       }
     };
 
     fetchAccountData();
-
-    // Подписка на обновления с сервера
-    socket.on("updateTotalSubmissions", (newCount) => {
-      setTotalSubmissions(newCount);
-    });
-
-    return () => {
-      socket.off("updateTotalSubmissions");
-    };
   }, []);
 
   return (
