@@ -878,16 +878,6 @@ function Apps() {
     fetchAccountData();
   }, []);
 
-  const marqueeRef = useRef(null);
-
-  useEffect(() => {
-    const marquee = marqueeRef.current;
-    if (marquee) {
-      const clone = marquee.cloneNode(true);
-      marquee.parentElement.appendChild(clone);
-    }
-  }, []);
-
   return (
     <main>
       <div className="marquee-container">
