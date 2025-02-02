@@ -442,7 +442,7 @@ function updateTotalSubmissions(newTotalCount) {
     io.emit("updateTotalSubmissions", newTotalCount);
 }
 
-// Заменяем вызов io.emit в вашем коде
+let newTotalCount = 0; // или получаем из БД
 updateTotalSubmissions(newTotalCount);
 
 
