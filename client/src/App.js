@@ -891,7 +891,7 @@ function Apps() {
   return (
     <main>
       <div className="marquee-container">
-        <div className="marquee" ref={marqueeRef}>
+        <div className="marquee" >
           🌟 Общее количество передач команды: {totalSubmissions} 🌟
         </div>
       </div>
