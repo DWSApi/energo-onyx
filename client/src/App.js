@@ -25,7 +25,7 @@ import LeadsTable from "./LeadsTable";
 import "./Marquee.css";
 import { io } from "socket.io-client";
 
-
+const socket = io(process.env.REACT_APP_API_URL); // Создаем соединение с сервером
 
 // Основной компонент приложения
 function App() {
