@@ -853,6 +853,23 @@ function Apps() {
 
   const [totalSubmissions, setTotalSubmissions] = useState(0); // Новое состояние для общего количества
 
+  const updateSubmissionData = (userId) => {
+    const submissionCountKey = `${userId}_submissionCount`;
+    const submissionDateKey = `${userId}_submissionDate`;
+    const currentDate = new Date().toISOString().split("T")[0];
+    const storedDate = localStorage.getItem(submissionDateKey) || "";
+
+    if (storedDate !== currentDate) {
+      localStorage.setItem(submissionDateKey, currentDate);
+      localStorage.setItem(submissionCountKey, "0");
+    }
+
+    const updatedSubmissionCount = parseInt(localStorage.getItem(submissionCountKey), 10) || 0;
+    setSubmissionCount(updatedSubmissionCount);
+    setLastSubmissionDate(currentDate);
+  };
+
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
