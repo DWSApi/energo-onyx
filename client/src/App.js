@@ -23,7 +23,8 @@ import MyLeads from "./MyLeads";
 import exitAccount from './exitAccount.jpg'
 import LeadsTable from "./LeadsTable";
 import "./Marquee.css";
-import io from "socket.io-client";
+import { io } from "socket.io-client";
+
 
 
 // Основной компонент приложения

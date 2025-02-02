@@ -7,7 +7,8 @@ const path = require("path");
 const multer = require("multer");
 const XLSX = require("xlsx");
 const { use } = require("react");
-import io from "socket.io-client";
+import { io } from "socket.io-client";
+
 
 const app = express();
 const port = process.env.PORT || 10001;
